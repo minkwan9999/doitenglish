@@ -302,8 +302,9 @@ body{font-synthesis:none}
    업데이트할 때: VERSION 올리고 CHANGELOG 맨 위에 한 줄 추가
    ============================================================ */
 const APP_NAME = '두잇출결';
-const VERSION = '0.22.0';
+const VERSION = '0.22.1';
 const CHANGELOG = [
+  { v: '0.22.1', d: '2026-10-03', n: ['학부모 링크를 주소 끝에 # 대신 ?s=로 붙이는 방식으로 변경(카카오톡 등에서 # 뒷부분이 사라지는 문제 대응). 예전 # 링크도 계속 열림'] },
   { v: '0.22.0', d: '2026-10-03', n: ['화면 아래 가운데에 지금 보는 날짜(현황에서는 월)를 표시하고, 그 아래에 오늘 여부(오늘이 아니면 탭하면 오늘로)를 작게 표시'] },
   { v: '0.21.2', d: '2026-10-03', n: ['숙제 항목의 저장 버튼을 다른 카드와 같은 위치(제목 줄 오른쪽) 하나로 정리, 아래쪽 저장과 되돌리기 삭제'] },
   { v: '0.21.1', d: '2026-10-03', n: ['숙제 항목 칸 아래에도 저장 버튼 추가, 저장하지 않은 변경이 있으면 안내 표시'] },
@@ -765,7 +766,12 @@ function buildPayload(S, st) {
   }
   return { v: 1, r: S.room, n: st.name, t: today, i: S.items.map(it => it.label), w: rows };
 }
-const linkBase = () => (typeof window.__linkBase === 'string' ? window.__linkBase : /^(https?|file):$/.test(location.protocol) ? location.href.split('#')[0] : '');
+const linkBase = () => (typeof window.__linkBase === 'string' ? window.__linkBase : /^https?:$/.test(location.protocol) ? location.origin + location.pathname : location.protocol === 'file:' ? location.href.split('#')[0].split('?')[0] : '');
+/* 학부모 링크 읽기: 주소 끝의 ?s=(DB) 또는 ?p=(기록 담은 링크), 예전 #s= #p= 도 지원 */
+function readRoute() {
+  const q = new URLSearchParams(location.search); const h = location.hash;
+  return { s: q.get('s') || (h.startsWith('#s=') ? h.slice(3) : ''), p: q.get('p') || (h.startsWith('#p=') ? h.slice(3) : '') };
+}
 function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const hashStr = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
 
@@ -1510,11 +1516,11 @@ function App() {
   const [sheet, setSheet] = useState(null);
   const tmr = useRef();
 
-  const [hash, setHash] = useState(location.hash);
-  useEffect(() => { const f = () => setHash(location.hash); window.addEventListener('hashchange', f); return () => window.removeEventListener('hashchange', f); }, []);
-  const parentData = hash.startsWith('#p=') ? decPayload(hash.slice(3)) : null;
-  const pvToken = hash.startsWith('#s=') ? hash.slice(3) : '';
-  const isParent = hash.startsWith('#p=') || hash.startsWith('#s=');
+  const [route, setRoute] = useState(readRoute);
+  useEffect(() => { const f = () => setRoute(readRoute()); window.addEventListener('hashchange', f); window.addEventListener('popstate', f); return () => { window.removeEventListener('hashchange', f); window.removeEventListener('popstate', f); }; }, []);
+  const parentData = route.p ? decPayload(route.p) : null;
+  const pvToken = route.s;
+  const isParent = !!(route.s || route.p);
   const [pv, setPv] = useState({ st: 'idle', d: null });
   const [pvTry, setPvTry] = useState(0);
   useEffect(() => {
@@ -1588,10 +1594,10 @@ function App() {
     }
     return '#p=' + encPayload(buildPayload(S, st));
   };
-  const makeLink = async st => { const base = linkBase(); if (!base) return ''; const h = await hashFor(st); return h ? base + h : ''; };
+  const makeLink = async st => { const base = linkBase(); if (!base) return ''; const h = await hashFor(st); return h ? base + '?' + h.slice(1) : ''; };
   const onPreview = async st => { const h = await hashFor(st); if (!h) { toast('아직 올라가지 않았어요. 잠시 후 다시 눌러주세요'); return; } location.hash = h; window.scrollTo(0, 0); };
   if (isParent) {
-    const back = S.students.length > 0 ? () => { location.hash = ''; } : null;
+    const back = S.students.length > 0 ? () => { history.replaceState(null, '', location.pathname); setRoute(readRoute()); } : null;
     if (pvToken) return html`<${ParentView} d=${pv.d} state=${pv.st} back=${back} retry=${() => setPvTry(pvTry + 1)} />`;
     return html`<${ParentView} d=${parentData} state=${parentData ? 'ok' : 'none'} back=${back} />`;
   }
