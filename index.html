@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>두잇잉글리쉬 출결·숙제</title>
+<title>두잇출결</title>
+<meta name="apple-mobile-web-app-title" content="두잇출결">
+<meta name="application-name" content="두잇출결">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
@@ -227,7 +229,7 @@ body{font-synthesis:none}
 .tbl>.grp{border-radius:17px 17px 0 0}
 .tbl .gnote{border-bottom:0;padding-bottom:6px}
 .thead{display:grid;align-items:center;position:sticky;top:calc(var(--sat) + 54px);z-index:5;background:var(--head);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 6px;font-size:11px;color:var(--muted);text-align:center}
-.thead span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 1px}
+.thead span{white-space:normal;word-break:break-all;line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;padding:0 1px}
 .thead .c-name{text-align:left;padding-left:4px}
 .thead .hw0,.tbl .st .hw0{margin-left:4px}
 .tbl .st{display:grid;align-items:center;padding:4px 6px;border-bottom:1px solid var(--line);gap:0}
@@ -266,6 +268,20 @@ body{font-synthesis:none}
 .pv-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .pv-scroll .pv-row:last-of-type{border-bottom:0}
 .btn.dim{opacity:.55}
+.days.sm{display:flex;gap:4px;flex-wrap:nowrap}
+.days.sm .day{flex:1 1 0;min-width:0;width:auto;height:38px;padding:0;font-size:14px}
+.brow{padding:10px 0;border-bottom:1px solid var(--line)}
+.brow .btop{display:flex;gap:8px;margin-bottom:8px}
+.brow .btop .inp{flex:1;min-width:0}
+.brow.need .inp{border-color:var(--abs)}
+.quick{padding:10px;margin-bottom:6px;border:1px dashed var(--line);border-radius:12px}
+.rbtns{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.rbtns .rsum{margin-left:auto;text-align:right}
+.pv-h span{word-break:break-all;line-height:1.15}
+.irow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.irow .inum{width:20px;text-align:center;color:var(--muted)}
+.irow .inp{flex:1;min-width:0}
+.irow .icnt{width:34px;text-align:right}
 </style>
 </head>
 <body>
@@ -281,8 +297,19 @@ body{font-synthesis:none}
    두잇잉글리쉬 출결·숙제  —  파일 1개짜리 리액트 앱 (빌드 없음)
    업데이트할 때: VERSION 올리고 CHANGELOG 맨 위에 한 줄 추가
    ============================================================ */
-const VERSION = '0.17.0';
+const APP_NAME = '두잇출결';
+const VERSION = '0.21.2';
 const CHANGELOG = [
+  { v: '0.21.2', d: '2026-10-03', n: ['숙제 항목의 저장 버튼을 다른 카드와 같은 위치(제목 줄 오른쪽) 하나로 정리, 아래쪽 저장과 되돌리기 삭제'] },
+  { v: '0.21.1', d: '2026-10-03', n: ['숙제 항목 칸 아래에도 저장 버튼 추가, 저장하지 않은 변경이 있으면 안내 표시'] },
+  { v: '0.21.0', d: '2026-10-03', n: ['숙제 항목 입력을 5칸으로 나누고 이름은 5글자까지로 제한(칸 위치를 기준으로 기록이 이어짐). 표 제목은 긴 이름이 두 줄까지 보이게 변경'] },
+  { v: '0.20.2', d: '2026-10-03', n: ['등원 시작일 당일은 오는 요일이 아니어도 목록과 학부모 화면에 표시, 시작일과 요일이 안 맞으면 안내'] },
+  { v: '0.20.1', d: '2026-10-03', n: ['원생 여러 명 추가 화면 정리: 등원 시작일과 등원 요일을 접어둔 한꺼번에 적용하기 안으로 모으고, 원생마다 요일 따로, 시작일 따로 버튼으로 필요한 원생만 따로 지정'] },
+  { v: '0.20.0', d: '2026-10-03', n: ['원생별 등원 시작일 추가: 등록할 때 지정(비우면 등록한 날), 그 날부터 목록에 나타나고 지난 날짜에 빈칸 상태로 기록 가능. 한 명 추가, 여러 명 추가, 엑셀, 클라우드, 학부모 화면에 반영'] },
+  { v: '0.19.0', d: '2026-10-03', n: ['원생 여러 명 추가 화면을 이름 입력 + 요일 클릭 방식으로 변경(요일 기본은 빈칸, 요일을 고르지 않으면 추가 불가). 한 명 추가도 같은 기본값. 빈 요일 칸에 한꺼번에 적용하는 줄, 이름 목록 붙여넣기 추가'] },
+  { v: '0.18.0', d: '2026-10-03', n: ['시작일 이전 날짜로도 이동해서 기록할 수 있게 변경(지난 기록 입력). 시작일 이전 날짜에 기록하면 시작일이 그 날짜로 자동으로 앞당겨짐. 이동 한도는 오늘부터 400일 전까지'] },
+  { v: '0.17.2', d: '2026-10-03', n: ['오늘 오는 원생이 없을 때 안내를 구체화(오늘 요일, 등록된 원생의 요일, 설정으로 가는 버튼)'] },
+  { v: '0.17.1', d: '2026-10-03', n: ['앱 이름을 두잇출결로 정하고 화면 맨 아래 버전 왼쪽에 표시, 브라우저 탭과 홈 화면 아이콘 이름도 두잇출결로 변경'] },
   { v: '0.17.0', d: '2026-10-03', n: ['지금 올리기, 클라우드에서 불러오기 버튼을 일반 화면에서 삭제(개발자용으로 이동). 비어 있는 폰에서 로그인하면 클라우드 기록을 자동으로 가져오고, 앱을 다시 열거나 화면으로 돌아올 때 못 올린 기록을 자동으로 다시 올림'] },
   { v: '0.16.0', d: '2026-10-02', n: ['관리자 화면에 비밀번호 초기화 추가(임시 비밀번호 생성, 기존 로그인 해제), 설정에서 본인 비밀번호 바꾸기 추가'] },
   { v: '0.15.0', d: '2026-10-02', n: ['로그인 버튼 삭제: 처음 접속하면 이메일, 비밀번호, 비밀번호 확인과 가입 버튼만 표시. 가입하면 바로 로그인되고, 이미 가입한 이메일은 같은 비밀번호로 가입을 누르면 로그인됨. 한 번 로그인하면 계속 유지(로그아웃은 개발자용으로 이동)'] },
@@ -551,7 +578,7 @@ function useCloud(S, setS, skipDiff) {
         if (r.error) throw r.error;
       }
       if (work.students && S0.students.length) {
-        r = await sb.from('students').upsert(S0.students.map(s => ({ owner_id: uid, id: s.id, name: s.name, days: s.days || [], token: s.token, updated_at: new Date().toISOString() })), { onConflict: 'owner_id,id' });
+        r = await sb.from('students').upsert(S0.students.map(s => ({ owner_id: uid, id: s.id, name: s.name, days: s.days || [], token: s.token, since: s.since || null, updated_at: new Date().toISOString() })), { onConflict: 'owner_id,id' });
         if (r.error) throw r.error;
       }
       if (work.del.length) {
@@ -604,7 +631,7 @@ function useCloud(S, setS, skipDiff) {
     if (!session) return;
     const d = dirtyRef.current;
     if (prev.room !== S.room || prev.start !== S.start || JSON.stringify(prev.items) !== JSON.stringify(S.items)) d.acad = true;
-    const key = s => JSON.stringify(s.students.map(x => [x.id, x.name, x.days, x.token]));
+    const key = s => JSON.stringify(s.students.map(x => [x.id, x.name, x.days, x.token, x.since || '']));
     if (key(prev) !== key(S)) {
       d.students = true;
       const ids = new Set(S.students.map(x => x.id));
@@ -681,7 +708,7 @@ function useCloud(S, setS, skipDiff) {
     try {
       const ac = await sb.from('academies').select('room,start_date,items').maybeSingle();
       if (ac.error) throw ac.error;
-      const students = await all('students', 'id,name,days,token', ['name', 'id']);
+      const students = await all('students', 'id,name,days,token,since', ['name', 'id']);
       if (!ac.data && students.length === 0) return '클라우드에 저장된 기록이 없어요';
       const att = {}; const hw = {};
       (await all('attendance', 'student_id,day,status', ['day', 'student_id'])).forEach(r => { (att[r.day] = att[r.day] || {})[r.student_id] = { s: r.status, t: '' }; });
@@ -695,7 +722,7 @@ function useCloud(S, setS, skipDiff) {
       setS(prev => normalize(Object.assign({}, prev, {
         room: ac.data ? ac.data.room : prev.room, start: ac.data ? ac.data.start_date : prev.start,
         items: ac.data && ac.data.items && ac.data.items.length ? ac.data.items : prev.items,
-        students: students.map(s => ({ id: s.id, name: s.name, days: s.days, token: s.token })), att, hw,
+        students: students.map(s => ({ id: s.id, name: s.name, days: s.days, token: s.token, since: s.since || '' })), att, hw,
       })));
       setRestored(n => n + 1);
       return '';
@@ -728,7 +755,8 @@ function buildPayload(S, st) {
     const x = (S.hw[d] && S.hw[d][st.id] && S.hw[d][st.id].x) || {};
     const hwStr = S.items.map(it => (x[it.id] === 'd' || x[it.id] === 'n' ? x[it.id] : '-')).join('');
     const hasHw = /[dn]/.test(hwStr);
-    if ((st.days || []).includes(dow) || a || hasHw) rows.push([d, a ? a.s : '', hwStr]);
+    if (st.since && d < st.since) continue;
+    if ((st.days || []).includes(dow) || (st.since && st.since === d) || a || hasHw) rows.push([d, a ? a.s : '', hwStr]);
   }
   return { v: 1, r: S.room, n: st.name, t: today, i: S.items.map(it => it.label), w: rows };
 }
@@ -753,13 +781,13 @@ async function copyText(t) {
 const sortByName = (a, b) => a.name.localeCompare(b.name, 'ko');
 const visibleStudents = (S, date) => {
   const dow = parseYmd(date).getDay();
-  return S.students.filter(s => (s.days || []).includes(dow)).slice().sort(sortByName);
+  return S.students.filter(s => ((s.days || []).includes(dow) || (s.since && s.since === date)) && (!s.since || date >= s.since)).slice().sort(sortByName);
 };
 /* "민수 월수금" 같은 줄을 이름과 요일로 나누기 (요일이 없으면 월~금) */
-function parseBulk(text) {
+function parseBulk(text, dflt) {
   return text.split(/[\n,]/).map(s => s.trim()).filter(Boolean).map(line => {
     const m = line.match(/^(.+?)\s+([월화수목금토일]+)$/);
-    if (!m) return { name: line, days: WEEKDAYS };
+    if (!m) return { name: line, days: dflt === undefined ? WEEKDAYS : dflt };
     const days = [...new Set(m[2].split('').map(ch => DOW.indexOf(ch)))].sort();
     return { name: m[1].trim(), days };
   });
@@ -830,16 +858,18 @@ function Today({ S, date, today, setAtt, toggleItem, saveDay, goSettings, backup
   const [help, setHelp] = useState(false);
   if (S.students.length === 0) return html`<div className="card empty"><p style=${{ marginBottom: 0 }}>등록된 원생이 없어요. <button className="link" onClick=${goSettings}>설정에서 추가하기</button></p></div>`;
   const list = visibleStudents(S, date);
-  if (date < S.start) return html`<div className="card empty"><b>앱을 시작하기 전 날이에요</b><p>시작일은 ${fmtLong(S.start)}이에요. 그 전 날짜는 기록하지 않아요.</p></div>`;
   if (date > today) return html`<div className="card empty"><b>아직 오지 않은 날이에요</b><p>${fmtLong(date)}에 오는 원생은 ${list.length}명이에요. 그날이 되면 출결과 숙제를 입력할 수 있어요.</p></div>`;
   const recs = S.att[date] || {};
   const hws = S.hw[date] || {};
   const stored = list.length > 0 && list.every(s => recs[s.id]);
   const cols = '58px repeat(' + (3 + S.items.length) + ', minmax(0, 1fr))';
   return html`<div>
+    ${date < S.start && html`<div className="banner">시작일(${fmtShort(S.start)}) 이전 날짜예요. 여기에 기록하면 시작일이 ${fmtShort(date)}로 앞당겨져서, 현황과 학부모 화면에도 이 날부터 나와요.</div>`}
     ${backupDays !== null && backupDays >= 14 && html`<div className="banner">백업한 지 ${backupDays}일 지났어요. 설정에서 백업을 해두세요.</div>`}
     ${list.length === 0
-      ? html`<div className="card empty"><b>이 요일에 오는 원생이 없어요</b><p>설정에서 원생의 요일을 확인해주세요.</p></div>`
+      ? html`<div className="card empty"><b>${DOW[parseYmd(date).getDay()]}요일에 오는 원생이 없어요</b>
+          <p>등록된 원생 ${S.students.length}명은 ${[...new Set(S.students.flatMap(s => s.days || []))].sort().map(d => DOW[d]).join('') || '요일 미지정'}요일에 와요. ${DOW[parseYmd(date).getDay()]}요일에도 와야 하는 원생이면 설정에서 원생의 요일을 고쳐주세요.</p>
+          <div className="btns" style=${{ justifyContent: 'center' }}><button className="btn sm pri" onClick=${goSettings}>설정에서 요일 고치기</button></div></div>`
       : html`<div className="list tbl">
           <div className="grp">
             <b>${list.length}명</b>
@@ -953,30 +983,87 @@ function DaysPicker({ days, setDays }) {
 }
 
 function StudentEditor({ student, onSave, onCancel }) {
+  const [since, setSince] = useState(student ? student.since || '' : '');
   const [name, setName] = useState(student ? student.name : '');
-  const [days, setDays] = useState(student ? student.days || [] : WEEKDAYS);
+  const [days, setDays] = useState(student ? student.days || [] : []);
   return html`<div className="card">
     <h2>${student ? '원생 수정' : '원생 추가'}</h2>
     <div className="field"><label>이름 (별칭이나 이름 일부를 권장해요)</label>
       <input className="inp" value=${name} onChange=${e => setName(e.target.value)} placeholder="예: 민수" /></div>
-    <div className="field"><label>오는 요일</label><${DaysPicker} days=${days} setDays=${setDays} /></div>
+    <div className="field"><label>오는 요일 (눌러서 고르세요)</label><${DaysPicker} days=${days} setDays=${setDays} />
+      ${!days.length && html`<p className="note" style=${{ margin: '8px 0 0' }}>요일을 하나 이상 골라야 저장할 수 있어요.</p>`}</div>
+    <div className="field"><label>${student ? '등원 시작일 (비워두면 제한 없음)' : '등원 시작일 (비워두면 오늘부터)'}</label>
+      <input className="inp" type="date" max=${ymd(new Date())} value=${since} onChange=${e => setSince(e.target.value)} />
+      <p className="note" style=${{ margin: '6px 0 0' }}>이 날부터 오늘 화면 목록에 나타나요. 2개월 전부터 다녔다면 그 날짜를 고르고, 오늘 화면에서 ‹로 이동해 지난 기록을 입력하세요.</p>
+      ${since && days.length > 0 && !days.includes(parseYmd(since).getDay()) && html`<p className="note" role="alert" style=${{ margin: '6px 0 0', color: 'var(--late)' }}>${fmtShort(since)}은 선택한 요일(${[1, 2, 3, 4, 5, 6, 0].filter(d => days.includes(d)).map(d => DOW[d]).join('')})이 아니에요. 그 날 하루는 첫날이라 나오고, 이후에는 선택한 요일에만 나와요.</p>`}</div>
     <div className="btns">
-      <button className="btn pri" disabled=${!name.trim()} onClick=${() => onSave({ id: student ? student.id : uid(), name: name.trim(), days })}>저장</button>
+      <button className="btn pri" disabled=${!name.trim() || !days.length || (since && since > ymd(new Date()))} onClick=${() => onSave({ id: student ? student.id : uid(), name: name.trim(), days, since: since || (student ? '' : ymd(new Date())) })}>저장</button>
       <button className="btn" onClick=${onCancel}>취소</button>
     </div>
   </div>`;
 }
 
 function BulkAdd({ onSave, onCancel }) {
-  const [text, setText] = useState('');
-  const parsed = parseBulk(text);
+  const blank = () => ({ k: uid(), name: '' });          // ownDays, ownSince가 없으면 "한꺼번에 적용하기" 값을 따라감
+  const [rows, setRows] = useState([blank(), blank(), blank()]);
+  const [common, setCommon] = useState({ since: '', days: [] });
+  const [openAll, setOpenAll] = useState(false);
+  const [paste, setPaste] = useState(null); // null이면 닫힘
+  const ORDER = [1, 2, 3, 4, 5, 6, 0];
+  const flip = (list, d) => (list.includes(d) ? list.filter(x => x !== d) : [...list, d].sort());
+  const upd = (k, patch) => setRows(rows.map(r => (r.k === k ? { ...r, ...patch } : r)));
+  const daysOf = r => (r.ownDays !== undefined ? r.ownDays : common.days);
+  const sinceOf = r => (r.ownSince !== undefined ? r.ownSince : common.since);
+  const named = rows.filter(r => r.name.trim());
+  const missing = named.filter(r => !daysOf(r).length).length;
+  const shortDate = s => fmtShort(s).replace(/\(.\)/, '');
+  const dayBtns = (list, onTap, label) => html`<div className="days sm" role="group" aria-label=${label}>${ORDER.map(d => html`
+    <button key=${d} type="button" className=${'day' + (list.includes(d) ? ' on' : '')} aria-pressed=${list.includes(d)} onClick=${() => onTap(d)}>${DOW[d]}</button>`)}</div>`;
   return html`<div className="card">
     <h2>원생 여러 명 추가</h2>
-    <div className="field"><label>한 줄에 한 명씩 쓰세요. 이름 뒤에 요일을 쓰면 그 요일에만 와요. 요일을 안 쓰면 월~금이에요.</label>
-      <textarea className="ta" style=${{ minHeight: '180px' }} value=${text} onChange=${e => setText(e.target.value)} placeholder=${'민수 월수금\n지아 화목\n도윤'}></textarea></div>
-    ${parsed.length > 0 && html`<p className="note">${parsed.slice(0, 4).map(p => p.name + '(' + p.days.map(d => DOW[d]).join('') + ')').join(', ')}${parsed.length > 4 ? ' 외 ' + (parsed.length - 4) + '명' : ''}</p>`}
+    <p>이름을 쓰고, 아래 "한꺼번에 적용하기"에서 모두 같은 요일과 시작일을 정하세요. 다른 원생만 칸에서 따로 정하면 돼요.</p>
+
+    <button className=${'btn sm' + (openAll ? ' pri' : '')} aria-expanded=${openAll} onClick=${() => setOpenAll(!openAll)}>한꺼번에 적용하기 ${openAll ? '▴' : '▾'}</button>
+    ${!openAll && html`<p className="note" style=${{ margin: '8px 0 0' }}>지금: 요일 ${common.days.length ? common.days.slice().sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b)).map(d => DOW[d]).join('') : '아직 안 정함'} · 등원 시작일 ${common.since ? shortDate(common.since) : '오늘'}</p>`}
+    ${openAll && html`<div className="quick" style=${{ marginTop: '10px' }}>
+      <div className="field"><label>등원 요일 (모든 원생)</label>${dayBtns(common.days, d => setCommon({ ...common, days: flip(common.days, d) }), '모든 원생 등원 요일')}</div>
+      <div className="field" style=${{ marginBottom: 0 }}><label>등원 시작일 (비워두면 오늘부터)</label>
+        <input className="inp" type="date" max=${ymd(new Date())} value=${common.since} onChange=${e => setCommon({ ...common, since: e.target.value })} /></div>
+    </div>`}
+
+    ${rows.map((r, i) => html`<div className=${'brow' + (r.name.trim() && !daysOf(r).length ? ' need' : '')} key=${r.k}>
+      <div className="btop">
+        <input className="inp" value=${r.name} onChange=${e => upd(r.k, { name: e.target.value })} placeholder=${'이름 ' + (i + 1)} aria-label=${'원생 ' + (i + 1) + ' 이름'} />
+        ${rows.length > 1 && html`<button className="btn sm" aria-label="이 칸 지우기" onClick=${() => setRows(rows.filter(x => x.k !== r.k))}>✕</button>`}
+      </div>
+      <div className="rbtns">
+        <button className=${'btn sm' + (r.ownDays !== undefined ? ' pri' : '')} aria-pressed=${r.ownDays !== undefined}
+          onClick=${() => upd(r.k, { ownDays: r.ownDays !== undefined ? undefined : common.days })}>요일 따로</button>
+        <button className=${'btn sm' + (r.ownSince !== undefined ? ' pri' : '')} aria-pressed=${r.ownSince !== undefined}
+          onClick=${() => upd(r.k, { ownSince: r.ownSince !== undefined ? undefined : common.since })}>시작일 따로</button>
+        ${r.name.trim() && html`<span className="sub rsum">${daysOf(r).length ? daysOf(r).slice().sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b)).map(d => DOW[d]).join('') : '요일 안 정함'} · ${sinceOf(r) ? shortDate(sinceOf(r)) + '부터' : '오늘부터'}</span>`}
+      </div>
+      ${r.ownDays !== undefined && html`<div style=${{ marginTop: '8px' }}>${dayBtns(r.ownDays, d => upd(r.k, { ownDays: flip(r.ownDays, d) }), (r.name || '원생 ' + (i + 1)) + ' 요일')}</div>`}
+      ${r.ownSince !== undefined && html`<div style=${{ marginTop: '8px' }}><input className="inp" type="date" max=${ymd(new Date())} value=${r.ownSince} onChange=${e => upd(r.k, { ownSince: e.target.value })} aria-label=${(r.name || '원생') + ' 등원 시작일'} /></div>`}
+    </div>`)}
+
+    <div className="btns" style=${{ margin: '10px 0' }}>
+      <button className="btn sm" onClick=${() => setRows([...rows, blank()])}>＋ 한 칸 더</button>
+      <button className="btn sm" onClick=${() => setPaste(paste === null ? '' : null)}>이름 목록 붙여넣기</button>
+    </div>
+    ${paste !== null && html`<div className="field">
+      <textarea className="ta" value=${paste} onChange=${e => setPaste(e.target.value)} placeholder=${'민수\n지아\n도윤'}></textarea>
+      <p className="note" style=${{ margin: '6px 0 8px' }}>한 줄에 한 명씩 쓰세요. 이름 뒤에 요일을 같이 쓰면(예: 민수 월수금) 그 원생만 그 요일로 따로 정해져요.</p>
+      <button className="btn sm pri" disabled=${!paste.trim()} onClick=${() => {
+        const add = parseBulk(paste, null).map(p => (p.days ? { k: uid(), name: p.name, ownDays: p.days } : { k: uid(), name: p.name }));
+        setRows([...rows.filter(r => r.name.trim() || r.ownDays !== undefined || r.ownSince !== undefined), ...add]); setPaste(null);
+      }}>목록에 추가</button>
+    </div>`}
+
+    ${missing > 0 && html`<p className="note" role="alert" style=${{ color: 'var(--abs)' }}>등원 요일이 정해지지 않은 원생이 ${missing}명 있어요. 위의 "한꺼번에 적용하기"에서 요일을 고르거나, 칸의 "요일 따로"를 눌러주세요.</p>`}
     <div className="btns">
-      <button className="btn pri" disabled=${!parsed.length} onClick=${() => onSave(parsed)}>${parsed.length}명 추가</button>
+      <button className="btn pri" disabled=${!named.length || missing > 0}
+        onClick=${() => onSave(named.map(r => ({ name: r.name.trim(), days: daysOf(r), since: sinceOf(r) || ymd(new Date()) })))}>${named.length}명 추가</button>
       <button className="btn" onClick=${onCancel}>취소</button>
     </div>
   </div>`;
@@ -997,7 +1084,7 @@ function buildXlsx(S) {
     ws['!cols'] = widths.map(w => ({ wch: w }));
     XLSX.utils.book_append_sheet(wb, ws, name);
   };
-  add('원생', [['이름', '요일'], ...S.students.slice().sort(sortByName).map(s => [s.name, (s.days || []).map(d => DOW[d]).join('')])], [16, 12]);
+  add('원생', [['이름', '요일', '등원시작일'], ...S.students.slice().sort(sortByName).map(s => [s.name, (s.days || []).map(d => DOW[d]).join(''), s.since || ''])], [16, 12, 14]);
   add('숙제항목', [['항목'], ...S.items.map(i => [i.label])], [16]);
   const att = [['날짜', '이름', '상태']];
   Object.keys(S.att).sort().forEach(d => Object.keys(S.att[d]).forEach(id => {
@@ -1035,7 +1122,7 @@ function parseXlsx(buf, S) {
     if (idByName[name]) throw new Error('이름이 같은 원생이 있어요: ' + name + '. 이름을 구분해서 적어주세요');
     const dayText = String(r[1] || '');
     const days = [...new Set(dayText.split('').filter(ch => DOW.includes(ch)).map(ch => DOW.indexOf(ch)))].sort();
-    const st = { id: uid(), name, days: days.length ? days : WEEKDAYS, token: newToken() };
+    const st = { id: uid(), name, days: days.length ? days : WEEKDAYS, token: newToken(), since: normDate(r[2]) || '' };
     idByName[name] = st.id; students.push(st);
   });
   const labels = [...new Set((rows('숙제항목') || []).map(r => String(r[0] || '').trim()).filter(Boolean))];
@@ -1159,7 +1246,7 @@ function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
   const dev = taps >= 5;
   const [edit, setEdit] = useState(null); // {type, obj}
   const [pending, setPending] = useState(null);
-  const [itemsText, setItemsText] = useState(null);
+  const [slots, setSlots] = useState(null); // null이면 바꾼 게 없음, 아니면 [{id,label}] 칸 목록
   const [roomText, setRoomText] = useState(null);
   const [startText, setStartText] = useState(null);
   const [armed, arm, disarm] = useArm();
@@ -1185,11 +1272,11 @@ function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
     replaceAll(freshState()); disarm(); toast('모든 데이터를 삭제했어요');
   };
   const saveStudent = s => {
-    mutate(n => { const i = n.students.findIndex(x => x.id === s.id); if (i >= 0) n.students[i] = Object.assign({}, s, { token: n.students[i].token || newToken() }); else n.students.push(Object.assign({}, s, { token: newToken() })); });
+    mutate(n => { const i = n.students.findIndex(x => x.id === s.id); if (i >= 0) n.students[i] = Object.assign({}, s, { token: n.students[i].token || newToken() }); else n.students.push(Object.assign({}, s, { token: newToken() })); if (s.since && s.since < n.start) n.start = s.since; });
     setEdit(null);
   };
   const saveBulk = list => {
-    mutate(n => { list.forEach(p => n.students.push({ id: uid(), name: p.name, days: p.days, token: newToken() })); });
+    mutate(n => { list.forEach(p => { n.students.push({ id: uid(), name: p.name, days: p.days, token: newToken(), since: p.since || '' }); if (p.since && p.since < n.start) n.start = p.since; }); });
     setEdit(null); toast(list.length + '명을 추가했어요');
   };
   const delStudent = id => {
@@ -1198,10 +1285,11 @@ function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
     disarm();
   };
   const saveItems = () => {
-    const labels = [...new Set(itemsText.split('\n').map(s => s.trim()).filter(Boolean))];
-    if (!labels.length) { toast('숙제 항목을 하나 이상 적어주세요'); return; }
-    mutate(n => { n.items = labels.map(l => n.items.find(o => o.label === l) || { id: uid(), label: l }); });
-    setItemsText(null); toast('숙제 항목을 저장했어요');
+    const used = slots.map(s => ({ id: s.id, label: s.label.trim() })).filter(s => s.label);
+    if (!used.length) { toast('숙제 항목을 하나 이상 적어주세요'); return; }
+    if (new Set(used.map(s => s.label)).size !== used.length) { toast('같은 이름이 있어요. 서로 다르게 적어주세요'); return; }
+    mutate(n => { n.items = used.map(s => ({ id: s.id || uid(), label: s.label })); });
+    setSlots(null); toast('숙제 항목을 저장했어요');
   };
   const saveStart = () => {
     const v = startText;
@@ -1245,7 +1333,10 @@ function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
   }
 
   const students = S.students.slice().sort(sortByName);
-  const curItemsText = S.items.map(i => i.label).join('\n');
+  const ITEM_MAX = 5;
+  const curSlots = (() => { const a = S.items.map(i => ({ id: i.id, label: i.label })); while (a.length < 5) a.push({ id: null, label: '' }); return a; })();
+  const shownSlots = slots || curSlots;
+  const slotsChanged = slots !== null && JSON.stringify(slots.map(s => s.label.trim())) !== JSON.stringify(curSlots.map(s => s.label));
   return html`<div>
     <div className="card">
       <div className="chead">
@@ -1256,7 +1347,7 @@ function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
         </div>
       </div>
       ${students.map(s => html`<div className="srow" key=${s.id}>
-        <div className="info"><b>${s.name}</b><small>${daysText(s.days)}</small></div>
+        <div className="info"><b>${s.name}</b><small>${daysText(s.days)}${s.since ? ' · ' + fmtShort(s.since).replace(/\(.\)/, '') + '부터' : ''}</small></div>
         <button className="btn" onClick=${() => setEdit({ type: 'student', obj: s })}>수정</button>
         <button className=${'btn danger' + (armed === 'ds' + s.id ? ' armed' : '')} onClick=${() => delStudent(s.id)}>${armed === 'ds' + s.id ? '한 번 더' : '삭제'}</button>
       </div>`)}
@@ -1265,10 +1356,16 @@ function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
     <div className="card">
       <div className="chead">
         <h2>숙제 항목</h2>
-        <button className="btn sm pri" disabled=${itemsText === null || itemsText === curItemsText} onClick=${saveItems}>저장</button>
+        <button className="btn sm pri" disabled=${!slotsChanged} onClick=${saveItems}>저장</button>
       </div>
-      <p>모든 원생에게 공통으로 적용돼요. 한 줄에 하나씩 쓰세요. 항목 이름을 바꾸면 이전 기록은 새 항목과 연결되지 않아요.</p>
-      <textarea className="ta" value=${itemsText === null ? curItemsText : itemsText} onChange=${e => setItemsText(e.target.value)}></textarea>
+      <p>모든 원생에게 공통으로 적용돼요. 최대 5개, 이름은 ${ITEM_MAX}글자까지예요. 칸을 비우면 그 숙제는 쓰지 않아요. 같은 칸의 이름을 바꾸면 이전 기록이 새 이름으로 이어져요.</p>
+      ${shownSlots.map((s, i) => html`<div className="irow" key=${i}>
+        <span className="inum">${i + 1}</span>
+        <input className="inp" maxLength=${ITEM_MAX} value=${s.label} placeholder=${'숙제' + (i + 1)} aria-label=${'숙제 ' + (i + 1) + ' 이름'}
+          onChange=${e => setSlots(shownSlots.map((x, j) => (j === i ? { ...x, label: e.target.value.slice(0, ITEM_MAX) } : x)))} />
+        <span className="sub icnt">${[...s.label].length}/${ITEM_MAX}</span>
+      </div>`)}
+      ${slotsChanged && html`<p className="note" role="status" style=${{ margin: '4px 0 8px', color: 'var(--late)' }}>아직 저장하지 않았어요. 오른쪽 위의 저장을 눌러야 적용돼요.</p>`}
     </div>
 
     <div className="card">
@@ -1291,7 +1388,7 @@ function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
         <h2>사용 시작일</h2>
         <button className="btn sm pri" disabled=${startText === null || startText === S.start} onClick=${saveStart}>저장</button>
       </div>
-      <p>이 날짜 이전은 화면과 현황에서 보이지 않아요. 기록을 지우는 건 아니고, 시작일을 앞으로 당기면 다시 보여요.</p>
+      <p>현황과 학부모 화면은 이 날짜부터 보여줘요. 지난 날짜(오늘 화면에서 ‹로 이동)에 기록을 입력하면 시작일이 자동으로 앞당겨져요. 기록을 지우는 건 아니고, 시작일을 앞으로 당기면 다시 보여요.</p>
       <input className="inp" type="date" max=${ymd(new Date())} value=${startText === null ? S.start : startText} onChange=${e => setStartText(e.target.value)} />
     </div>
 
@@ -1443,21 +1540,23 @@ function App() {
 
   /* 아직 저장 안 된 출결만 기본값(등원)으로 채움. 이미 누른 칸과 숙제 칸은 그대로 */
   const fillDefaults = (n, list) => {
+    if (date < n.start) n.start = date;
     n.att[date] = n.att[date] || {};
     list.forEach(st => { if (!n.att[date][st.id]) n.att[date][st.id] = { s: 'p', t: '' }; });
   };
   /* 출결: 누른 원생의 출결만 저장. 지각·결석을 한 번 더 누르면 등원으로 돌아옴 */
   const setAtt = (st, k) => {
-    if (date > todayStr || date < S.start) return;
+    if (date > todayStr) return;
     const cur = (S.att[date] || {})[st.id];
     const next = cur && cur.s === k && k !== 'p' ? 'p' : k;
-    mutate(n => { n.att[date] = n.att[date] || {}; n.att[date][st.id] = { s: next, t: '' }; });
+    mutate(n => { if (date < n.start) n.start = date; n.att[date] = n.att[date] || {}; n.att[date][st.id] = { s: next, t: '' }; });
   };
   /* 숙제: 누른 칸만 저장. 빈칸(기본) → 완료 → 안함 → 빈칸 */
   const toggleItem = (st, itemId) => {
-    if (date > todayStr || date < S.start) return;
+    if (date > todayStr) return;
     const cur = ((S.hw[date] || {})[st.id] || { x: {} }).x[itemId];
     mutate(n => {
+      if (date < n.start) n.start = date;
       n.hw[date] = n.hw[date] || {};
       const rec = n.hw[date][st.id] || { r: true, x: {}, m: '' };
       const x = { ...(rec.x || {}) };
@@ -1465,7 +1564,7 @@ function App() {
       n.hw[date][st.id] = { ...rec, r: true, x };
     });
   };
-  const saveDay = () => { if (date > todayStr || date < S.start) return; mutate(n => fillDefaults(n, visibleStudents(S, date))); toast('남은 칸을 기본값으로 저장했어요'); };
+  const saveDay = () => { if (date > todayStr) return; mutate(n => fillDefaults(n, visibleStudents(S, date))); toast('남은 칸을 기본값으로 저장했어요'); };
 
   const copy = async (text, label) => {
     const ok = await copyText(text);
@@ -1498,7 +1597,7 @@ function App() {
   const goNext = () => (inStats ? setYm(shiftMonth(ym, 1)) : setDate(addDays(date, 1)));
   const goNow = () => (inStats ? setYm(curYm) : setDate(todayStr));
   const atNow = inStats ? ym === curYm : date === todayStr;
-  const atStart = inStats ? ym <= S.start.slice(0, 7) : date <= S.start;
+  const atStart = inStats ? ym <= S.start.slice(0, 7) : date <= addDays(todayStr, -400);
   const headText = settingsOpen || adminShown ? '' : inStats ? ym.slice(0, 4) + '년 ' + Number(ym.slice(5)) + '월' : fmtLong(date) + ' (' + DOW[parseYmd(date).getDay()] + ')';
   const toggleStats = () => { if (settingsOpen || adminShown) { setSettingsOpen(false); setAdminOpen(false); setTab('stats'); } else setTab(tab === 'stats' ? 'today' : 'stats'); };
   return html`<div>
@@ -1525,7 +1624,7 @@ function App() {
           ? html`<${Today} S=${S} date=${date} today=${todayStr} setAtt=${setAtt} toggleItem=${toggleItem} saveDay=${saveDay}
               goSettings=${() => setSettingsOpen(true)} backupDays=${backupDays} />`
           : html`<${Stats} S=${S} ym=${ym} copy=${copy} makeLink=${makeLink} onPreview=${onPreview} toast=${toast} cloud=${cloud} />`}
-      <div className="ver">v${VERSION}</div>
+      <div className="ver">${APP_NAME} · v${VERSION}</div>
     </main>
     ${!settingsOpen && !adminShown && html`<nav className="tabs" aria-label="날짜 이동"><div className="in">
       <button className="tab arrow" aria-label=${inStats ? '이전 달' : '전날'} disabled=${atStart} onClick=${goPrev}>‹</button>
