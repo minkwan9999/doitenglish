@@ -281,8 +281,10 @@ body{font-synthesis:none}
    두잇잉글리쉬 출결·숙제  —  파일 1개짜리 리액트 앱 (빌드 없음)
    업데이트할 때: VERSION 올리고 CHANGELOG 맨 위에 한 줄 추가
    ============================================================ */
-const VERSION = '0.14.1';
+const VERSION = '0.16.0';
 const CHANGELOG = [
+  { v: '0.16.0', d: '2026-10-02', n: ['관리자 화면에 비밀번호 초기화 추가(임시 비밀번호 생성, 기존 로그인 해제), 설정에서 본인 비밀번호 바꾸기 추가'] },
+  { v: '0.15.0', d: '2026-10-02', n: ['로그인 버튼 삭제: 처음 접속하면 이메일, 비밀번호, 비밀번호 확인과 가입 버튼만 표시. 가입하면 바로 로그인되고, 이미 가입한 이메일은 같은 비밀번호로 가입을 누르면 로그인됨. 한 번 로그인하면 계속 유지(로그아웃은 개발자용으로 이동)'] },
   { v: '0.14.1', d: '2026-10-02', n: ['메일 확인이 필요한 계정(관리자) 안내 문구 정리'] },
   { v: '0.14.0', d: '2026-10-02', n: ['관리자 전용 화면 추가: 관리자 이메일로 로그인하면 관리자 버튼이 나타나고, 등록된 이메일을 보고 추가하고 지울 수 있음'] },
   { v: '0.13.8', d: '2026-10-02', n: ['관리자가 등록한 이메일만 가입·로그인 가능, 등록된 이메일은 확인 메일 없이 가입 즉시 로그인'] },
@@ -642,9 +644,9 @@ function useCloud(S, setS, skipDiff) {
   const signup = async (email, password) => {
     if (!sb) return { msg: '연결 도구를 불러오지 못했어요. 인터넷을 확인하고 새로고침해주세요' };
     const { data, error } = await sb.auth.signUp({ email, password });
-    if (error) return { msg: authMsg(error) };
-    if (data.session) return { msg: '' };
-    // 관리자가 등록한 이메일은 가입 즉시 확인 처리되므로 바로 로그인해 봄
+    if (error && !/already registered|already been registered/i.test(String(error.message || ''))) return { msg: authMsg(error) };
+    if (data && data.session) return { msg: '' };
+    // 가입 즉시 로그인. 이미 가입한 이메일이면 같은 비밀번호일 때 로그인됨(다른 폰에서 다시 들어올 때)
     const r = await sb.auth.signInWithPassword({ email, password });
     return r.error ? { msg: authMsg(r.error) } : { msg: '' };
   };
@@ -1076,7 +1078,8 @@ function Admin({ toast, myEmail }) {
   const [em, setEm] = useState('');
   const [busy, setBusy] = useState(false);
   const [armed, arm, disarm] = useArm();
-  const errText = e => /forbidden/.test(String((e && e.message) || e)) ? '관리자만 쓸 수 있어요' : /invalid_email/.test(String((e && e.message) || e)) ? '이메일 형식을 확인해주세요' : /cannot_remove_admin/.test(String((e && e.message) || e)) ? '관리자 이메일은 지울 수 없어요' : authMsg(e);
+  const [resetInfo, setResetInfo] = useState(null);
+  const errText = e => /user_not_found/.test(String((e && e.message) || e)) ? '아직 가입하지 않은 이메일이에요' : /cannot_reset_admin/.test(String((e && e.message) || e)) ? '관리자 계정은 여기서 초기화할 수 없어요' : /forbidden/.test(String((e && e.message) || e)) ? '관리자만 쓸 수 있어요' : /invalid_email/.test(String((e && e.message) || e)) ? '이메일 형식을 확인해주세요' : /cannot_remove_admin/.test(String((e && e.message) || e)) ? '관리자 이메일은 지울 수 없어요' : authMsg(e);
   const load = async () => {
     const { data, error } = await sb.rpc('admin_list_emails');
     if (error) setErr(errText(error)); else { setRows(data || []); setErr(''); }
@@ -1096,8 +1099,24 @@ function Admin({ toast, myEmail }) {
     if (error) { toast(errText(error)); return; }
     toast('이메일을 지웠어요. 그 사람은 더 이상 로그인할 수 없어요'); load();
   };
+  const genPw = () => { const al = 'abcdefghjkmnpqrstuvwxyz23456789'; const a = new Uint8Array(8); window.crypto.getRandomValues(a); return Array.from(a, x => al[x % al.length]).join(''); };
+  const reset = async email => {
+    if (armed !== 'pw' + email) { arm('pw' + email); return; }
+    disarm();
+    const pw = genPw();
+    const { error } = await sb.rpc('admin_reset_password', { p_email: email, p_password: pw });
+    if (error) { toast(errText(error)); return; }
+    setResetInfo({ email, pw });
+  };
   const dateText = t => new Date(t).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
   return html`<div>
+    ${resetInfo && html`<div className="card" role="alert" style=${{ borderColor: 'var(--link)' }}>
+      <div className="chead"><h2>새 비밀번호</h2><button className="btn sm" onClick=${() => setResetInfo(null)}>닫기</button></div>
+      <p style=${{ marginBottom: '6px' }}>${resetInfo.email}</p>
+      <div style=${{ fontSize: '28px', letterSpacing: '2px', padding: '10px 0', userSelect: 'all' }}>${resetInfo.pw}</div>
+      <div className="btns"><button className="btn sm pri" onClick=${async () => { const ok = await copyText(resetInfo.pw); toast(ok ? '비밀번호를 복사했어요' : '길게 눌러 복사해주세요'); }}>복사</button></div>
+      <p style=${{ margin: '10px 0 0' }}>이 비밀번호를 그 사람에게 전달해주세요. 그 사람 폰은 로그아웃되어 가입 화면이 나와요. 이메일과 이 비밀번호를 넣고 가입을 누르면 들어가져요. 들어간 뒤 설정에서 본인 비밀번호로 바꾸라고 안내해주세요. 이 창을 닫으면 이 비밀번호는 다시 볼 수 없어요.</p>
+    </div>`}
     <div className="card">
       <div className="chead"><h2>등록된 이메일</h2></div>
       <p>여기에 등록된 이메일만 가입하고 로그인할 수 있어요. 지워도 그 사람의 기록은 남아 있고 로그인만 막혀요.</p>
@@ -1106,7 +1125,8 @@ function Admin({ toast, myEmail }) {
       ${(rows || []).map(r => html`<div className="srow" key=${r.email}>
         <div className="info"><b>${r.email}</b>
           <small>${r.is_admin ? '관리자 · ' : ''}${r.joined ? '가입됨' + (r.last_sign_in ? ' · 마지막 로그인 ' + dateText(r.last_sign_in) : '') : '아직 가입 안 함'}</small></div>
-        ${!r.is_admin && html`<button className=${'btn danger' + (armed === 'rm' + r.email ? ' armed' : '')} onClick=${() => remove(r.email)}>${armed === 'rm' + r.email ? '한 번 더' : '삭제'}</button>`}
+        ${!r.is_admin && r.joined && html`<button className=${'btn sm' + (armed === 'pw' + r.email ? ' danger armed' : '')} onClick=${() => reset(r.email)}>${armed === 'pw' + r.email ? '한 번 더' : '비밀번호 초기화'}</button>`}
+        ${!r.is_admin && html`<button className=${'btn sm danger' + (armed === 'rm' + r.email ? ' armed' : '')} onClick=${() => remove(r.email)}>${armed === 'rm' + r.email ? '한 번 더' : '삭제'}</button>`}
       </div>`)}
     </div>
     <div className="card">
@@ -1121,6 +1141,8 @@ function Admin({ toast, myEmail }) {
 function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
   const [em, setEm] = useState('');
   const [pw, setPw] = useState('');
+  const [pw2, setPw2] = useState('');
+  const [chg, setChg] = useState(null);
   const [cmsg, setCmsg] = useState('');
   const [cbusy, setCbusy] = useState(false);
   const [taps, setTaps] = useState(0);
@@ -1269,20 +1291,37 @@ function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
         ${cloud.session && html`<button className="btn sm" disabled=${cbusy || cloud.status.s === 'syncing'} onClick=${async () => { setCbusy(true); const ok = await cloud.syncNow(); setCbusy(false); toast(ok ? '올렸어요' : '올리지 못했어요. 인터넷을 확인해주세요'); }}>지금 올리기</button>`}
       </div>
       ${!cloud.session ? html`<div>
-        <p>관리자가 등록한 이메일만 쓸 수 있어요. 처음이면 비밀번호를 정해서 가입을 누르세요. 로그인하면 기록이 자동으로 클라우드에 올라가고, 학부모가 링크로 언제든 최신 기록을 볼 수 있어요.</p>
+        <p>관리자가 등록한 이메일로만 가입할 수 있어요. 가입하면 바로 로그인되고, 이 폰에서는 계속 로그인된 상태로 유지돼요. 이미 가입했다면 같은 이메일과 비밀번호로 가입을 누르면 들어가져요.</p>
         <div className="field"><input className="inp" type="email" autoComplete="username" placeholder="이메일" value=${em} onChange=${e => setEm(e.target.value)} /></div>
-        <div className="field"><input className="inp" type="password" autoComplete="current-password" placeholder="비밀번호 (6자 이상)" value=${pw} onChange=${e => setPw(e.target.value)} /></div>
+        <div className="field"><input className="inp" type="password" autoComplete="new-password" placeholder="비밀번호 (6자 이상)" value=${pw} onChange=${e => setPw(e.target.value)} /></div>
+        <div className="field"><input className="inp" type="password" autoComplete="new-password" placeholder="비밀번호 확인" value=${pw2} onChange=${e => setPw2(e.target.value)} /></div>
         <div className="btns">
-          <button className="btn sm pri" disabled=${cbusy || !em || !pw} onClick=${async () => { setCbusy(true); setCmsg(''); const m = await cloud.login(em.trim(), pw); setCbusy(false); if (m) setCmsg(m); else { setPw(''); toast('로그인했어요'); } }}>로그인</button>
-          <button className="btn sm" disabled=${cbusy || !em || !pw} onClick=${async () => { setCbusy(true); setCmsg(''); const r = await cloud.signup(em.trim(), pw); setCbusy(false); setCmsg(r.msg); }}>처음이면 가입</button>
+          <button className="btn sm pri" disabled=${cbusy || !em || !pw || !pw2} onClick=${async () => {
+            setCmsg('');
+            if (pw.length < 6) { setCmsg('비밀번호는 6자 이상이어야 해요'); return; }
+            if (pw !== pw2) { setCmsg('비밀번호가 서로 달라요. 다시 확인해주세요'); return; }
+            setCbusy(true); const r = await cloud.signup(em.trim(), pw); setCbusy(false);
+            if (r.msg) setCmsg(r.msg); else { setPw(''); setPw2(''); toast('가입하고 로그인했어요'); }
+          }}>가입</button>
         </div>
         ${cmsg && html`<p style=${{ margin: '10px 0 0', color: 'var(--abs)' }} role="alert">${cmsg}</p>`}
       </div>` : html`<div>
+        ${chg && html`<div className="field" style=${{ marginTop: '4px' }}>
+          <input className="inp" type="password" autoComplete="new-password" placeholder="새 비밀번호 (6자 이상)" value=${chg.a} onChange=${e => setChg({ ...chg, a: e.target.value })} style=${{ marginBottom: '8px' }} />
+          <input className="inp" type="password" autoComplete="new-password" placeholder="새 비밀번호 확인" value=${chg.b} onChange=${e => setChg({ ...chg, b: e.target.value })} style=${{ marginBottom: '8px' }} />
+          <div className="btns"><button className="btn sm pri" disabled=${!chg.a || !chg.b} onClick=${async () => {
+            if (chg.a.length < 6) { setChg({ ...chg, msg: '비밀번호는 6자 이상이어야 해요' }); return; }
+            if (chg.a !== chg.b) { setChg({ ...chg, msg: '비밀번호가 서로 달라요' }); return; }
+            const { error } = await sb.auth.updateUser({ password: chg.a });
+            if (error) setChg({ ...chg, msg: authMsg(error) }); else { setChg(null); toast('비밀번호를 바꿨어요'); }
+          }}>저장</button><button className="btn sm" onClick=${() => setChg(null)}>취소</button></div>
+          ${chg.msg && html`<p style=${{ margin: '8px 0 0', color: 'var(--abs)' }} role="alert">${chg.msg}</p>`}
+        </div>`}
         ${cloud.cloudHas && html`<div className="banner" role="alert">클라우드에 저장된 기록이 있어요. 이 폰은 비어 있어서 자동으로 올리지 않았어요. 아래 <b>클라우드에서 불러오기</b>를 눌러주세요.</div>`}
         <p>${cloud.session.user.email}로 연결됨. ${cloud.status.s === 'error' ? '올리지 못한 기록이 ' + cloud.pendingN + '건 있어요: ' + cloud.status.err : cloud.pendingN > 0 ? '올릴 기록이 ' + cloud.pendingN + '건 대기 중이에요.' : cloud.status.last ? '모두 올라갔어요. (마지막 ' + new Date(cloud.status.last).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) + ')' : '아직 올린 기록이 없어요.'}</p>
         <div className="btns">
+          <button className="btn sm" onClick=${() => setChg(chg ? null : { a: '', b: '', msg: '' })}>비밀번호 바꾸기</button>
           <button className=${'btn sm' + (armed === 'pull' ? ' danger armed' : '')} disabled=${cbusy} onClick=${async () => { if (armed !== 'pull') { arm('pull'); return; } disarm(); setCbusy(true); const m = await cloud.pull(); setCbusy(false); toast(m || '클라우드에서 불러왔어요'); }}>${armed === 'pull' ? '지금 폰의 기록을 덮어써요. 한 번 더' : '클라우드에서 불러오기'}</button>
-          <button className="btn sm" onClick=${() => cloud.logout()}>로그아웃</button>
         </div>
       </div>`}
     </div>
@@ -1322,6 +1361,9 @@ function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
             <button key=${k} className=${'btn danger' + (armed === k ? ' armed' : '')}
               onClick=${() => { if (armed === k) { mutate(fn); disarm(); toast(msg); } else arm(k); }}>${armed === k ? '한 번 더' : label}</button>`)}
         </div></div>
+      ${cloud.session && html`<div className="field"><label>계정 (${cloud.session.user.email})</label>
+        <div className="btns"><button className=${'btn' + (armed === 'devout' ? ' danger armed' : '')} onClick=${() => { if (armed === 'devout') { disarm(); cloud.logout(); } else arm('devout'); }}>${armed === 'devout' ? '한 번 더' : '로그아웃'}</button></div>
+        <p style=${{ margin: '6px 0 0' }}>로그아웃하면 이 폰은 다시 가입(로그인) 화면이 나와요. 폰 안의 기록은 그대로 남아요.</p></div>`}
       <div className="field" style=${{ marginBottom: 0 }}><label>모든 날짜</label>
         <div className="btns">
           <button className=${'btn danger' + (armed === 'devall' ? ' armed' : '')}
