@@ -281,8 +281,9 @@ body{font-synthesis:none}
    두잇잉글리쉬 출결·숙제  —  파일 1개짜리 리액트 앱 (빌드 없음)
    업데이트할 때: VERSION 올리고 CHANGELOG 맨 위에 한 줄 추가
    ============================================================ */
-const VERSION = '0.16.0';
+const VERSION = '0.17.0';
 const CHANGELOG = [
+  { v: '0.17.0', d: '2026-10-03', n: ['지금 올리기, 클라우드에서 불러오기 버튼을 일반 화면에서 삭제(개발자용으로 이동). 비어 있는 폰에서 로그인하면 클라우드 기록을 자동으로 가져오고, 앱을 다시 열거나 화면으로 돌아올 때 못 올린 기록을 자동으로 다시 올림'] },
   { v: '0.16.0', d: '2026-10-02', n: ['관리자 화면에 비밀번호 초기화 추가(임시 비밀번호 생성, 기존 로그인 해제), 설정에서 본인 비밀번호 바꾸기 추가'] },
   { v: '0.15.0', d: '2026-10-02', n: ['로그인 버튼 삭제: 처음 접속하면 이메일, 비밀번호, 비밀번호 확인과 가입 버튼만 표시. 가입하면 바로 로그인되고, 이미 가입한 이메일은 같은 비밀번호로 가입을 누르면 로그인됨. 한 번 로그인하면 계속 유지(로그아웃은 개발자용으로 이동)'] },
   { v: '0.14.1', d: '2026-10-02', n: ['메일 확인이 필요한 계정(관리자) 안내 문구 정리'] },
@@ -616,9 +617,10 @@ function useCloud(S, setS, skipDiff) {
     if (dirtyCount(d) > 0) { persist(); schedule(); }
   }, [S]);
 
-  // 처음 로그인하면 지금 폰에 있는 걸 올림. 단, 이 폰이 비어 있는데 클라우드에 기록이 있으면 덮어쓰지 않고 불러오기를 안내함
-  const [cloudHas, setCloudHas] = useState(false);
+  // 처음 로그인하면: 이 폰이 비어 있고 클라우드에 기록이 있으면 자동으로 가져오고, 아니면 지금 폰의 기록을 올림
+  const [restored, setRestored] = useState(0);
   const [tick, setTick] = useState(0);
+  const pullRef = useRef(null);
   useEffect(() => {
     if (!session) return undefined;
     let off = false;
@@ -627,13 +629,19 @@ function useCloud(S, setS, skipDiff) {
         const { count, error } = await sb.from('students').select('id', { count: 'exact', head: true });
         if (off) return;
         if (error) { setStatus(s => Object.assign({}, s, { s: 'error', err: authMsg(error) })); setTimeout(() => setTick(t => t + 1), 30000); return; }
-        if (count > 0 && Sref.current.students.length === 0) { setCloudHas(true); return; }
-        setCloudHas(false); markAll(); persist(); schedule(300);
+        if (count > 0 && Sref.current.students.length === 0) {
+          const m = await pullRef.current();
+          if (m && !off) { setStatus(s => Object.assign({}, s, { s: 'error', err: m })); setTimeout(() => setTick(t => t + 1), 30000); }
+          return;
+        }
+        markAll(); persist(); schedule(300);
       } else if (dirtyCount(dirtyRef.current) > 0) schedule(500);
     })();
     const on = () => schedule(300);
+    const vis = () => { if (document.visibilityState === 'visible' && dirtyCount(dirtyRef.current) > 0) schedule(300); };
     window.addEventListener('online', on);
-    return () => { off = true; window.removeEventListener('online', on); };
+    document.addEventListener('visibilitychange', vis);
+    return () => { off = true; window.removeEventListener('online', on); document.removeEventListener('visibilitychange', vis); };
   }, [session && session.user && session.user.id, tick]);
 
   const login = async (email, password) => {
@@ -682,19 +690,21 @@ function useCloud(S, setS, skipDiff) {
         const rec = (dd[r.student_id] = dd[r.student_id] || { r: true, x: {}, m: '' });
         rec.x[r.item_id] = r.status;
       });
-      const cc = loadCloud(); cc.pushedFor = sd.session.user.id; saveCloud(cc); setCloudHas(false);
+      const cc = loadCloud(); cc.pushedFor = sd.session.user.id; saveCloud(cc);
       skipDiff.current = true;
       setS(prev => normalize(Object.assign({}, prev, {
         room: ac.data ? ac.data.room : prev.room, start: ac.data ? ac.data.start_date : prev.start,
         items: ac.data && ac.data.items && ac.data.items.length ? ac.data.items : prev.items,
         students: students.map(s => ({ id: s.id, name: s.name, days: s.days, token: s.token })), att, hw,
       })));
+      setRestored(n => n + 1);
       return '';
     } catch (e) { return authMsg(e); }
   };
+  pullRef.current = pull;
 
   const regenToken = st => setS(prev => { const n = structuredClone(prev); const x = n.students.find(s => s.id === st.id); if (x) x.token = newToken(); return n; });
-  return { session, status, pendingN, cloudHas, isAdmin, login, signup, logout, syncNow, pull, regenToken, hasPending: () => dirtyCount(dirtyRef.current) > 0 };
+  return { session, status, pendingN, restored, isAdmin, login, signup, logout, syncNow, pull, regenToken, hasPending: () => dirtyCount(dirtyRef.current) > 0 };
 }
 
 /* ---------- 학부모 링크: 최근 10일 기록을 주소 안에 담아요(서버에 저장하지 않음) ---------- */
@@ -1288,7 +1298,6 @@ function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
     <div className="card">
       <div className="chead">
         <h2>클라우드</h2>
-        ${cloud.session && html`<button className="btn sm" disabled=${cbusy || cloud.status.s === 'syncing'} onClick=${async () => { setCbusy(true); const ok = await cloud.syncNow(); setCbusy(false); toast(ok ? '올렸어요' : '올리지 못했어요. 인터넷을 확인해주세요'); }}>지금 올리기</button>`}
       </div>
       ${!cloud.session ? html`<div>
         <p>관리자가 등록한 이메일로만 가입할 수 있어요. 가입하면 바로 로그인되고, 이 폰에서는 계속 로그인된 상태로 유지돼요. 이미 가입했다면 같은 이메일과 비밀번호로 가입을 누르면 들어가져요.</p>
@@ -1317,11 +1326,9 @@ function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
           }}>저장</button><button className="btn sm" onClick=${() => setChg(null)}>취소</button></div>
           ${chg.msg && html`<p style=${{ margin: '8px 0 0', color: 'var(--abs)' }} role="alert">${chg.msg}</p>`}
         </div>`}
-        ${cloud.cloudHas && html`<div className="banner" role="alert">클라우드에 저장된 기록이 있어요. 이 폰은 비어 있어서 자동으로 올리지 않았어요. 아래 <b>클라우드에서 불러오기</b>를 눌러주세요.</div>`}
         <p>${cloud.session.user.email}로 연결됨. ${cloud.status.s === 'error' ? '올리지 못한 기록이 ' + cloud.pendingN + '건 있어요: ' + cloud.status.err : cloud.pendingN > 0 ? '올릴 기록이 ' + cloud.pendingN + '건 대기 중이에요.' : cloud.status.last ? '모두 올라갔어요. (마지막 ' + new Date(cloud.status.last).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) + ')' : '아직 올린 기록이 없어요.'}</p>
         <div className="btns">
           <button className="btn sm" onClick=${() => setChg(chg ? null : { a: '', b: '', msg: '' })}>비밀번호 바꾸기</button>
-          <button className=${'btn sm' + (armed === 'pull' ? ' danger armed' : '')} disabled=${cbusy} onClick=${async () => { if (armed !== 'pull') { arm('pull'); return; } disarm(); setCbusy(true); const m = await cloud.pull(); setCbusy(false); toast(m || '클라우드에서 불러왔어요'); }}>${armed === 'pull' ? '지금 폰의 기록을 덮어써요. 한 번 더' : '클라우드에서 불러오기'}</button>
         </div>
       </div>`}
     </div>
@@ -1361,6 +1368,11 @@ function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
             <button key=${k} className=${'btn danger' + (armed === k ? ' armed' : '')}
               onClick=${() => { if (armed === k) { mutate(fn); disarm(); toast(msg); } else arm(k); }}>${armed === k ? '한 번 더' : label}</button>`)}
         </div></div>
+      ${cloud.session && html`<div className="field"><label>클라우드 수동 작업</label>
+        <div className="btns">
+          <button className="btn" disabled=${cbusy || cloud.status.s === 'syncing'} onClick=${async () => { setCbusy(true); const ok = await cloud.syncNow(); setCbusy(false); toast(ok ? '올렸어요' : '올리지 못했어요. 인터넷을 확인해주세요'); }}>지금 올리기</button>
+          <button className=${'btn' + (armed === 'pull' ? ' danger armed' : '')} disabled=${cbusy} onClick=${async () => { if (armed !== 'pull') { arm('pull'); return; } disarm(); setCbusy(true); const m = await cloud.pull(); setCbusy(false); if (m) toast(m); }}>${armed === 'pull' ? '지금 폰 기록을 덮어써요. 한 번 더' : '클라우드에서 불러오기'}</button>
+        </div></div>`}
       ${cloud.session && html`<div className="field"><label>계정 (${cloud.session.user.email})</label>
         <div className="btns"><button className=${'btn' + (armed === 'devout' ? ' danger armed' : '')} onClick=${() => { if (armed === 'devout') { disarm(); cloud.logout(); } else arm('devout'); }}>${armed === 'devout' ? '한 번 더' : '로그아웃'}</button></div>
         <p style=${{ margin: '6px 0 0' }}>로그아웃하면 이 폰은 다시 가입(로그인) 화면이 나와요. 폰 안의 기록은 그대로 남아요.</p></div>`}
@@ -1416,6 +1428,7 @@ function App() {
   }, [pvToken, pvTry]);
   const skipDiff = useRef(false);
   const cloud = useCloud(S, setS, skipDiff);
+  useEffect(() => { if (cloud.restored > 0) toast('클라우드에서 기록을 가져왔어요'); }, [cloud.restored]);
   useEffect(() => { if (!isParent) saveState(S); }, [S, isParent]);
   useEffect(() => {
     const root = document.documentElement;
