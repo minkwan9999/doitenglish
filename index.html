@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>두잇잉글리쉬 출결·숙제</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<script>try{var __s=JSON.parse(localStorage.getItem("doit-english-v1"));if(__s&&__s.theme==="dark")document.documentElement.setAttribute("data-theme","dark")}catch(e){}</script>
+<style>
+:root{
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+  --bg:#EFE6D2; --surface:#FBF7EC; --ink:#3B2A1C; --muted:#75614B; --line:#D8CBAE; --head:#E7DCC1;
+  --accent:#6B4A2B; --accent-ink:#FBF3E2; --link:#A9561A;
+  --ok:#2F7D4F; --ok-bg:#DCEBD9; --late:#9A6A12; --late-bg:#F6E6B8; --abs:#C0392B; --abs-bg:#F6D9D3; --on-status:#FFFFFF;
+  --warn-bg:#F6E6B8; --warn-ink:#5E4310; --tab-h:60px;
+  box-sizing:border-box;
+  padding-top:var(--sat);
+  padding-bottom:var(--sab);
+}
+:root[data-theme="dark"]{
+--bg:#1C1411; --surface:#2A1F19; --ink:#F2E7D3; --muted:#BDA98F; --line:#4C3A2D; --head:#35271F;
+  --accent:#E3A15A; --accent-ink:#2B1B0E; --link:#F0B070;
+  --ok:#8FD3A4; --ok-bg:#23402E; --late:#EDC15E; --late-bg:#4A3A14; --abs:#F28B7E; --abs-bg:#4D2621; --on-status:#2B1B0E;
+  --warn-bg:#4A3A14; --warn-ink:#F2D894;
+}
+html{scroll-padding-top:var(--sat)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Jua','Noto Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  font-size:14px;line-height:1.45;-webkit-text-size-adjust:100%}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:520px;margin:0 auto;padding:0 14px}
+main.wrap{padding-bottom:calc(var(--tab-h) + 28px + var(--sab))}
+
+/* 상단 */
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 0 4px}
+.room{font-weight:700;font-size:13px;color:var(--muted)}
+.gear{border:1px solid var(--line);background:var(--surface);border-radius:10px;height:40px;padding:0 14px;font-weight:500}
+.gear.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+/* 날짜 */
+.datebar{display:flex;align-items:center;gap:8px;margin:6px 0 12px}
+.datebar .d{flex:1;text-align:center;font-size:22px;font-weight:900;letter-spacing:-.02em}
+.datebar .d small{display:block;font-size:12px;font-weight:500;color:var(--muted);letter-spacing:0}
+.nav{width:48px;height:48px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:20px;font-weight:700}
+.chip-today{border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:999px;height:32px;padding:0 12px;font-weight:700;font-size:13px}
+
+/* 요약 */
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.sum div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 4px;text-align:center}
+.sum b{display:block;font-size:19px;font-weight:900;line-height:1.1}
+.sum span{font-size:11px;color:var(--muted)}
+.sum .p b{color:var(--ok)} .sum .l b{color:var(--late)} .sum .a b{color:var(--abs)}
+
+/* 행 */
+.list{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.who{flex:1;min-width:0}
+.nm{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub{font-size:11px;color:var(--muted)}
+.seg{display:flex;gap:6px}
+.sb{width:58px;height:46px;border-radius:10px;border:1.5px solid var(--line);background:transparent;font-weight:700;font-size:13px;color:var(--muted)}
+.sb.p.on{background:var(--ok);border-color:var(--ok);color:var(--on-status)}
+.sb.l.on{background:var(--late);border-color:var(--late);color:var(--on-status)}
+.sb.a.on{background:var(--abs);border-color:var(--abs);color:var(--on-status)}
+.sb.d.on{background:var(--ok);border-color:var(--ok);color:var(--on-status)}
+.sb.h.on{background:var(--late);border-color:var(--late);color:var(--on-status)}
+.sb.n.on{background:var(--abs);border-color:var(--abs);color:var(--on-status)}
+
+/* 숙제 행 */
+.hrow{padding:10px;border-bottom:1px solid var(--line)}
+.hrow:last-child{border-bottom:0}
+.hrow .top2{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.hrow .seg{flex:1}
+.hrow .seg .sb{flex:1;width:auto}
+.memo{width:100%;height:40px;border:1px solid var(--line);border-radius:10px;padding:0 10px;background:transparent}
+.cp{height:40px;padding:0 14px;border-radius:10px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:700;white-space:nowrap}
+.cp:disabled{background:var(--line);color:var(--muted);cursor:default}
+.hrow .line2{display:flex;gap:8px}
+.hrow .line2 .memo{flex:1}
+
+/* 카드/폼 */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{margin:0 0 10px;font-size:15px;font-weight:900}
+.card p{margin:0 0 10px;color:var(--muted);font-size:13px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:4px}
+.inp,.ta{width:100%;border:1px solid var(--line);border-radius:10px;background:transparent;padding:10px}
+.inp{height:44px;padding-top:0;padding-bottom:0}
+.ta{min-height:96px;resize:vertical;line-height:1.5}
+.days{display:flex;gap:6px;flex-wrap:wrap}
+.day{width:42px;height:42px;border-radius:10px;border:1.5px solid var(--line);background:transparent;font-weight:700}
+.day.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn{height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:transparent;font-weight:700}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{border-color:var(--abs);color:var(--abs)}
+.btn.danger.armed{background:var(--abs);color:var(--on-status)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.srow{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.srow:last-child{border-bottom:0}
+.srow .info{flex:1;min-width:0}
+.srow .info small{display:block;color:var(--muted)}
+.banner{background:var(--warn-bg);color:var(--warn-ink);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:13px}
+.empty{text-align:center;padding:26px 14px}
+.empty b{display:block;font-size:16px;margin-bottom:6px}
+.empty p{color:var(--muted);font-size:13px;margin:0 0 14px}
+.toggle{display:flex;justify-content:flex-end;margin:0 0 8px}
+.link{background:none;border:0;color:var(--accent);font-weight:700;padding:6px 0;font-size:13px}
+
+/* 출결 현황 */
+.mrow{padding:10px 12px;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:0}
+.mrow .head{display:grid;grid-template-columns:1fr 38px 38px 38px 56px;gap:4px;align-items:center;width:100%;border:0;background:none;text-align:left;padding:0}
+.mrow .num{text-align:center;font-weight:700}
+.mrow .num.l{color:var(--late)} .mrow .num.a{color:var(--abs)} .mrow .num.p{color:var(--ok)}
+.mrow .rate{text-align:right;font-weight:900}
+.mhead{display:grid;grid-template-columns:1fr 38px 38px 38px 56px;gap:4px;padding:8px 12px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--line)}
+.mhead span{text-align:center}.mhead span:first-child{text-align:left}.mhead span:last-child{text-align:right}
+.detail{margin-top:8px;font-size:13px;color:var(--muted)}
+.detail .btns{margin-top:8px}
+
+/* 하단 탭 */
+.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:var(--sab);z-index:5}
+.tabs .in{max-width:520px;margin:0 auto;display:flex}
+.tab{flex:1;height:var(--tab-h);border:0;background:none;font-size:14px;font-weight:700;color:var(--muted);position:relative}
+.tab.on{color:var(--accent)}
+.tab.on::before{content:"";position:absolute;top:0;left:22%;right:22%;height:3px;border-radius:0 0 3px 3px;background:var(--accent)}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab-h) + 16px + var(--sab));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:13px;font-weight:500;z-index:9;max-width:90%;text-align:center}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:520px;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + var(--sab))}
+.ver{text-align:center;color:var(--muted);font-size:11px;margin:8px 0 0}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:360px){.sb{width:50px}.mrow .head,.mhead{grid-template-columns:1fr 32px 32px 32px 48px}}
+
+/* v0.2 반/항목 */
+.grp{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.grp b{font-size:13px}
+.grp span{flex:1;font-size:11px;color:var(--muted)}
+.grp .link{padding:4px 0}
+.hr-top{display:flex;align-items:center;gap:8px}
+.hr-name{flex:1;min-width:0;border:0;background:none;text-align:left;padding:2px 0}
+.hr-name .nm{display:block}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.badge.ok{color:var(--ok);border-color:var(--ok)}
+.badge.warn{color:var(--late);border-color:var(--late)}
+.qd{height:40px;padding:0 12px;border-radius:10px;border:1.5px solid var(--ok);background:transparent;color:var(--ok);font-weight:700;white-space:nowrap}
+.qd.on{background:var(--ok);color:var(--on-status)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 8px}
+.chip{height:40px;padding:0 12px;border-radius:10px;border:1.5px solid var(--ok);background:transparent;font-weight:700;color:var(--ok)}
+.chip.n{background:var(--abs);border-color:var(--abs);color:var(--on-status)}
+.chip.p{background:var(--late);border-color:var(--late);color:var(--on-status)}
+select.inp{appearance:auto}
+.note{font-size:12px;color:var(--muted);margin:0 0 10px}
+.st{padding:8px 10px;border-bottom:1px solid var(--line)}
+.st:last-child{border-bottom:0}
+.st-top{display:flex;align-items:center;gap:8px}
+.chips2{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chips2 .chip{flex:1 1 84px;height:38px;padding:0 6px;font-size:13px}
+.chips2.dim{opacity:.4}
+.tab.arrow{flex:0 0 28%;font-size:28px;font-weight:400;color:var(--ink)}
+.tab.center{flex:1;font-size:15px}
+.tab.center.off{color:var(--accent)}
+.tab.center.on::before{left:30%;right:30%}
+.tab.center.off::before{display:none}
+.chips2 .chip{flex:1 1 52px;padding:0 2px;font-size:14px}
+.sum3{grid-template-columns:repeat(3,1fr)}
+.hwc{flex:1 1 52px;height:50px;border-radius:10px;border:1.5px solid var(--line);background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 2px;line-height:1.2}
+.hwc small{font-size:11px;font-weight:500}
+.hwc b{font-size:14px;font-weight:700}
+.hwc.d{background:var(--ok);border-color:var(--ok);color:var(--on-status)}
+.hwc.n{background:var(--abs);border-color:var(--abs);color:var(--on-status)}
+.grp{flex-wrap:wrap}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.chead h2{margin:0;white-space:nowrap}
+.chead .btns{flex-wrap:nowrap;gap:6px}
+.btn.sm{height:38px;padding:0 12px;font-size:13px;white-space:nowrap;display:inline-flex;align-items:center}
+.btn:disabled{opacity:.45;cursor:default}
+.filebtn{position:relative;cursor:pointer}
+.filebtn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.inp,.ta,select.inp,.memo{font-size:16px}
+.mrow .num.h{color:var(--abs)}
+.mrow .num.zero{opacity:.3;font-weight:400}
+.mrow .head .nm{font-size:15px}
+.top{gap:10px}
+.ttl{display:flex;align-items:baseline;gap:8px;min-width:0;flex:1}
+.room{font-size:19px;font-weight:900;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.tdate{font-size:14px;font-weight:500;color:var(--ink);white-space:nowrap;flex:none}
+.tdate.off{color:var(--accent);font-weight:700}
+.top .btns{flex:none;flex-wrap:nowrap;gap:6px}
+.gear{height:36px;padding:0 10px;font-size:13px}
+.link:disabled{color:var(--muted);opacity:.55;cursor:default}
+.gnote{padding:8px 12px;font-size:12px;line-height:1.5;color:var(--muted);border-bottom:1px solid var(--line)}
+.sb.on.pre{background:transparent;color:var(--ok);border-color:var(--ok)}
+.hwc.d.pre{background:transparent;border-color:var(--ok);color:var(--ok)}
+.tab:disabled{opacity:.25;cursor:default}
+
+/* v0.10 사내 홍보물(써니 영어) 느낌: 베이지 바탕, 진한 갈색, 주황 포인트, 알약 모양 상태 표시 */
+body{font-synthesis:none}
+.card,.list{border-radius:18px}
+.grp{background:var(--head)}
+.grp b,.card h2{border-left:4px solid var(--link);padding-left:8px}
+.link{color:var(--link)}
+.mhead{background:var(--head)}
+.room{font-size:21px}
+.tdate{color:var(--ink)}
+.tdate.off{color:var(--link);font-weight:400}
+.tab.center.off{color:var(--link)}
+.sb{border-radius:999px}
+.sb.p.on{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.sb.l.on{background:var(--late-bg);border-color:var(--late);color:var(--late)}
+.sb.a.on{background:var(--abs-bg);border-color:var(--abs);color:var(--abs)}
+.sb.on.pre{background:transparent;border-style:dashed}
+.hwc{background:var(--surface);border-radius:12px}
+.hwc.d{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.hwc.n{background:var(--abs-bg);border-color:var(--abs);color:var(--abs)}
+
+/* v0.11 한 줄 표 */
+.topwrap{position:sticky;top:var(--sat);z-index:6;background:var(--bg)}
+.top{padding-bottom:8px}
+.list.tbl{overflow:visible}
+.tbl>.grp{border-radius:17px 17px 0 0}
+.tbl .gnote{border-bottom:0;padding-bottom:6px}
+.thead{display:grid;align-items:center;position:sticky;top:calc(var(--sat) + 54px);z-index:5;background:var(--head);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:6px 6px;font-size:11px;color:var(--muted);text-align:center}
+.thead span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 1px}
+.thead .c-name{text-align:left;padding-left:4px}
+.thead .hw0,.tbl .st .hw0{margin-left:4px}
+.tbl .st{display:grid;align-items:center;padding:4px 6px;border-bottom:1px solid var(--line);gap:0}
+.tbl .st:last-child{border-bottom:0;border-radius:0 0 17px 17px}
+.tbl .st .nm{font-size:14px;padding-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tbl .sb,.tbl .hwc{width:auto;height:38px;margin:0 1.5px;padding:0;border-radius:10px;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;min-width:0}
+.tbl .sb{border-radius:999px}
+.tbl .hwc b,.tbl .hwc small{display:none}
+.tbl .st.absent .hwc{opacity:.4}
+
+/* 학부모 화면 */
+.pv{padding-bottom:40px}
+.pv-head{padding:16px 0 12px}
+.pv-name{font-size:22px;margin:2px 0}
+.pv-row{display:grid;align-items:center;padding:8px 6px;border-bottom:1px solid var(--line);text-align:center;font-size:12px;column-gap:3px}
+.pv-row:last-child{border-bottom:0}
+.pv-row .dt{text-align:left;padding-left:4px}
+.pv-h{background:var(--head);color:var(--muted);font-size:11px;border-radius:17px 17px 0 0}
+.pill{display:block;padding:3px 0;border-radius:999px;font-size:11px;border:1.5px solid transparent;line-height:1.3}
+.pill.p,.pill.d{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.pill.l{background:var(--late-bg);border-color:var(--late);color:var(--late)}
+.pill.a,.pill.n{background:var(--abs-bg);border-color:var(--abs);color:var(--abs)}
+.dot{color:var(--line)}
+.list.tbl2{overflow:visible}
+.tbl2 .mhead{position:sticky;top:calc(var(--sat) + 54px);z-index:5;border-radius:17px 17px 0 0}
+.tbl2 .mrow:last-child{border-radius:0 0 17px 17px}
+.sdot{display:inline-block;width:9px;height:9px;border-radius:50%;flex:none;align-self:center;margin-left:-2px}
+.sdot.ok{background:var(--ok)}.sdot.wait{background:var(--late)}.sdot.err{background:var(--abs)}
+.ptabs{display:flex;margin:0 0 10px}
+.ptab{height:34px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:13px}
+.ptab.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pvfix{display:flex;flex-direction:column;height:calc(100dvh - var(--sat) - var(--sab));padding-bottom:14px;overflow:hidden}
+.pvfix .pv-fixed{flex:none}
+.pv-card{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.pv-card .pv-h{flex:none;border-radius:0}
+.pv-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.pv-scroll .pv-row:last-of-type{border-bottom:0}
+.btn.dim{opacity:.55}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ============================================================
+   두잇잉글리쉬 출결·숙제  —  파일 1개짜리 리액트 앱 (빌드 없음)
+   업데이트할 때: VERSION 올리고 CHANGELOG 맨 위에 한 줄 추가
+   ============================================================ */
+const VERSION = '0.14.1';
+const CHANGELOG = [
+  { v: '0.14.1', d: '2026-10-02', n: ['메일 확인이 필요한 계정(관리자) 안내 문구 정리'] },
+  { v: '0.14.0', d: '2026-10-02', n: ['관리자 전용 화면 추가: 관리자 이메일로 로그인하면 관리자 버튼이 나타나고, 등록된 이메일을 보고 추가하고 지울 수 있음'] },
+  { v: '0.13.8', d: '2026-10-02', n: ['관리자가 등록한 이메일만 가입·로그인 가능, 등록된 이메일은 확인 메일 없이 가입 즉시 로그인'] },
+  { v: '0.13.7', d: '2026-10-02', n: ['링크 새로 만들기 버튼을 로그인 전에도 보이게 함(로그인 전에는 누르면 안내만 표시)'] },
+  { v: '0.13.6', d: '2026-10-02', n: ['학부모 화면: 이름, 30일 버튼, 표 제목 줄을 모두 고정하고 표 안쪽 기록만 스크롤'] },
+  { v: '0.13.5', d: '2026-10-02', n: ['학부모 화면의 날짜·출결·숙제 제목 줄을 스크롤해도 위에 고정'] },
+  { v: '0.13.4', d: '2026-10-02', n: ['개발자용 예시 기록을 지난 50일치로 확대(30일 버튼 시험용)'] },
+  { v: '0.13.3', d: '2026-10-02', n: ['학부모 화면에 30일 버튼 하나 추가(누르면 최근 30일, 다시 누르면 전체)'] },
+  { v: '0.13.2', d: '2026-10-02', n: ['학부모 화면의 기간 탭 삭제, 있는 기록 전체를 보여줌'] },
+  { v: '0.13.1', d: '2026-10-02', n: ['학부모 화면의 기간을 전체(기본), 30일, 60일, 90일 탭으로 변경(10일 삭제)'] },
+  { v: '0.13.0', d: '2026-10-02', n: ['클라우드(DB) 연결: 선생님 로그인, 기록 자동 올리기, 학부모 링크가 DB에서 최신 기록을 읽음(#s=), 링크 재발급, 클라우드에서 불러오기'] },
+  { v: '0.12.4', d: '2026-10-01', n: ['현황의 요약 복사 버튼 삭제(학부모 링크로 대체)'] },
+  { v: '0.12.3', d: '2026-10-01', n: ['현황 표의 열 이름 줄도 스크롤할 때 위에 고정'] },
+  { v: '0.12.2', d: '2026-10-01', n: ['폰 시뮬레이터 안에서 위쪽 제목줄이 중간에 떠 보이던 문제 수정(안전 영역 값을 바꿀 수 있게 정리)'] },
+  { v: '0.12.1', d: '2026-10-01', n: ['시뮬레이터에서 학부모 링크를 만들고 열어볼 수 있도록 링크 기준 주소를 바꿀 수 있게 함(앱 사용에는 영향 없음)'] },
+  { v: '0.12.0', d: '2026-10-01', n: ['학부모에게 보낼 수 있는 최근 10일 출결·숙제 페이지(링크 방식, 서버 저장 없음) 추가, 개발자용에 예시 10일 기록 넣기 추가'] },
+  { v: '0.11.1', d: '2026-10-01', n: ['사용 설명을 평소엔 접어두고 사용법을 누르면 펼침'] },
+  { v: '0.11.0', d: '2026-10-01', n: ['오늘 화면을 한 줄짜리 표로 변경(원생 30명도 짧게 스크롤), 위쪽 제목줄과 열 이름 고정'] },
+  { v: '0.10.2', d: '2026-10-01', n: ['화면 색 선택에서 자동과 제목 삭제(라이트, 다크만). 기본은 라이트'] },
+  { v: '0.10.1', d: '2026-10-01', n: ['설정에서 화면 색을 자동, 라이트, 다크 중 고를 수 있음'] },
+  { v: '0.10.0', d: '2026-10-01', n: ['글꼴을 주아체로, 색과 모양을 베이지·갈색·주황 톤의 알약 상태 표시로 변경'] },
+  { v: '0.9.8', d: '2026-10-01', n: ['처음 시작 화면(원생 입력창, 샘플) 삭제. 원생이 없으면 한 줄 안내만 표시'] },
+  { v: '0.9.7', d: '2026-10-01', n: ['처음 화면에서 원생 이름을 바로 붙여넣어 시작, 목록 위 설명 문구를 두 줄로 줄임'] },
+  { v: '0.9.6', d: '2026-10-01', n: ['숙제 빈칸이 회색으로 칠해져 있던 문제 수정(흰 칸으로)'] },
+  { v: '0.9.5', d: '2026-10-01', n: ['숙제 칸 기본을 흰 빈칸으로 변경(누르면 완료, 안함, 빈칸 순서). 이대로 저장은 출결만 기본값(등원)으로 채움'] },
+  { v: '0.9.4', d: '2026-10-01', n: ['사용 시작일 추가: 시작일 이전 날짜는 보이지 않고 현황도 시작일부터 집계(설정에서 시작일 변경 가능)'] },
+  { v: '0.9.3', d: '2026-10-01', n: ['아직 오지 않은 날짜는 기본값을 보여주지 않고 입력도 막음'] },
+  { v: '0.9.2', d: '2026-10-01', n: ['칸을 누르면 누른 칸만 저장되고 나머지는 연한 기본값 그대로 유지. 이대로 저장은 아직 저장 안 된 칸만 기본값으로 채움'] },
+  { v: '0.9.1', d: '2026-10-01', n: ['개발자용에 출결·숙제 초기화 추가(선택한 날짜 둘 다, 전체 기간 둘 다)'] },
+  { v: '0.9.0', d: '2026-10-01', n: ['출결은 등원, 숙제는 완료를 기본값으로 먼저 보여줌(연한 테두리=저장 전). 바꿀 칸만 누르고, 안 바꿨으면 이대로 저장. 숙제는 안함과 완료 두 가지로 단순화'] },
+  { v: '0.8.7', d: '2026-10-01', n: ['숙제 칸의 기본 상태를 없음(회색 칸, 글자 없음)으로 변경'] },
+  { v: '0.8.6', d: '2026-10-01', n: ['숙제 비우기를 오늘 화면에서 빼고 개발자용 메뉴로 이동(설정에서 버전 제목을 5번 누르면 나타남)'] },
+  { v: '0.8.5', d: '2026-10-01', n: ['숙제 비우기 버튼 추가: 그날 보이는 원생의 숙제 표시를 전부 빈칸으로 되돌림'] },
+  { v: '0.8.4', d: '2026-10-01', n: ['숙제 칸에서 아직 안 누른 상태(빈칸)와 없음을 구분: 빈칸 → 완료 → 안함 → 없음 → 빈칸 순서'] },
+  { v: '0.8.3', d: '2026-10-01', n: ['남은 N명 모두 등원, 숙제 모두 완료 버튼을 항상 표시(할 일이 없으면 흐리게 비활성)'] },
+  { v: '0.8.2', d: '2026-10-01', n: ['교습소 이름을 크게 하고 같은 줄에 날짜(현황에서는 월) 표시, 숙제 모두 완료는 아직 누르지 않은 칸에만 적용(직접 누른 안함, 없음은 유지)'] },
+  { v: '0.8.1', d: '2026-10-01', n: ['오늘 화면 위쪽의 등원, 지각, 결석 합계 삭제'] },
+  { v: '0.8.0', d: '2026-10-01', n: ['출결 현황을 출결·숙제 현황으로 통합(원생별 등원, 지각, 결석, 숙제 안함), 위쪽 전체 합계 삭제, 숙제 안 한 항목별 날짜 표시'] },
+  { v: '0.7.2', d: '2026-10-01', n: ['숙제 상태를 없음, 완료, 안함으로 표시. 없음은 완료와 같게 처리(안함만 숙제 안 한 날로 집계)'] },
+  { v: '0.7.1', d: '2026-10-01', n: ['전체 글자 크기를 1~2px 줄임(입력칸은 아이폰 확대를 막으려고 16px 유지)'] },
+  { v: '0.7.0', d: '2026-10-01', n: ['설정 화면 정리(추가·저장 버튼을 제목 오른쪽으로), 교습소 이름 저장 버튼 추가, 백업을 엑셀로 변경(저장·불러오기)'] },
+  { v: '0.6.0', d: '2026-10-01', n: ['숙제 상태를 빈칸, 완료, 안함 글자로 표시(세모 삭제), 미체크 칸 삭제, 날짜 옆에 요일 표시, 오늘 글자 삭제, 숙제 빈칸 모두 완료 버튼 추가'] },
+  { v: '0.5.0', d: '2026-10-01', n: ['날짜 이동을 화면 아래 ‹ 오늘 › 버튼으로 이동, 위쪽 화살표와 전체 원생 보기 삭제, 도착 시간 표시 삭제, 숙제 항목 숙제1~숙제5로 변경(✓ 완료, ✕ 안함, △ 미흡)'] },
+  { v: '0.4.0', d: '2026-10-01', n: ['오늘과 숙제 화면을 하나로 합침: 원생마다 출결 버튼과 숙제 항목이 함께 보임. 항목은 기본 완료이고 눌러서 안함, 미흡으로 변경. 숙제 복사 기능과 메시지 문구 설정은 숨김(나중에 추가 예정)'] },
+  { v: '0.3.0', d: '2026-10-01', n: ['반과 수업 시간 개념 제거: 원생은 이름과 요일만, 숙제 항목은 전체 공통. 원생 여러 명 추가 시 이름 뒤에 요일 입력 가능'] },
+  { v: '0.2.0', d: '2026-10-01', n: ['반(시간표+숙제 항목) 도입, 숙제는 기본 완료에 안 한 항목만 표시, 반 전체 등원, 원생 여러 명 한꺼번에 추가'] },
+  { v: '0.1.0', d: '2026-10-01', n: ['첫 버전: 오늘 출결, 출결 현황, 숙제 기록과 학부모 메시지 복사, 백업/복원'] },
+];
+const STORE_KEY = 'doit-english-v1';
+const DATA_VER = 6;
+
+const { useState, useEffect, useRef } = React;
+const html = htm.bind(React.createElement);
+
+/* ---------- 날짜 도우미 ---------- */
+const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const parseYmd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); };
+const fmtLong = s => { const d = parseYmd(s); return (d.getMonth() + 1) + '월 ' + d.getDate() + '일'; };
+const fmtDow = s => DOW[parseYmd(s).getDay()] + '요일';
+const fmtShort = s => { const d = parseYmd(s); return (d.getMonth() + 1) + '/' + d.getDate() + '(' + DOW[d.getDay()] + ')'; };
+const nowHM = () => { const d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const shiftMonth = (ym, n) => { const [y, m] = ym.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); return d.getFullYear() + '-' + pad(d.getMonth() + 1); };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const daysText = days => (days || []).length ? days.map(d => DOW[d]).join('') : '요일 미지정';
+
+/* ---------- 기본값 / 저장 ---------- */
+const DEFAULT_ITEMS = ['숙제1', '숙제2', '숙제3', '숙제4', '숙제5'];
+const OLD_ITEMS = '단어 암기|교재 숙제|듣기';
+const DEFAULT_TPL = {
+  done: '안녕하세요, {교습소}입니다.\n{이름} 학생, 오늘({날짜}) 숙제 모두 잘 해왔습니다.\n{메모}',
+  issue: '안녕하세요, {교습소}입니다.\n{이름} 학생, 오늘({날짜}) 숙제 중 확인이 필요한 항목이 있어 안내드립니다.\n{항목}\n수업 시간에 지도하겠고, 가정에서도 확인 부탁드립니다.\n{메모}',
+};
+const WEEKDAYS = [1, 2, 3, 4, 5];
+const newState = () => ({
+  v: DATA_VER, room: '두잇잉글리쉬', items: [], students: [], att: {}, hw: {},
+  tpl: { ...DEFAULT_TPL }, created: ymd(new Date()), start: ymd(new Date()), theme: 'light', lastBackup: null,
+});
+const mkItems = labels => labels.map(l => ({ id: uid(), label: l }));
+
+/* v0.1 데이터를 v0.2 구조로 옮기기 */
+function migrate(raw) {
+  const out = { ...raw, v: 2, classes: [], tpl: { ...DEFAULT_TPL, done: (raw.tpl && raw.tpl.done) || DEFAULT_TPL.done } };
+  const bySig = {};
+  (raw.students || []).forEach(s => {
+    const days = (s.days || []).slice().sort();
+    const sig = days.join('') + '|' + (s.time || '');
+    if (!bySig[sig]) {
+      const nm = (days.length ? days.map(d => DOW[d]).join('') : '미지정') + (s.time ? ' ' + s.time : '');
+      bySig[sig] = { id: uid(), name: nm, days, time: s.time || '', items: mkItems(DEFAULT_ITEMS) };
+      out.classes.push(bySig[sig]);
+    }
+    s.classId = bySig[sig].id; delete s.days; delete s.time;
+  });
+  const hw = {};
+  Object.keys(raw.hw || {}).forEach(d => {
+    hw[d] = {};
+    Object.keys(raw.hw[d]).forEach(id => {
+      const r = raw.hw[d][id]; if (!r || !r.s) return;
+      const tag = r.s === 'part' ? '[일부만 함] ' : r.s === 'none' ? '[못함] ' : '';
+      hw[d][id] = { r: true, x: {}, m: (tag + (r.m || '')).trim() };
+    });
+  });
+  out.hw = hw;
+  return out;
+}
+/* v0.2(반 구조) 데이터를 v0.3(반 없음)으로 옮기기 */
+function migrate3(r) {
+  const classes = r.classes || [];
+  const labelId = {}; const items = [];
+  classes.forEach(c => c.items.forEach(it => { if (!labelId[it.label]) { labelId[it.label] = it.id; items.push({ id: it.id, label: it.label }); } }));
+  if (!items.length) mkItems(DEFAULT_ITEMS).forEach(i => items.push(i));
+  const cmap = {}; classes.forEach(c => { cmap[c.id] = c; });
+  const students = (r.students || []).map(s => {
+    const c = cmap[s.classId];
+    return { id: s.id, name: s.name, days: c && c.days && c.days.length ? c.days : WEEKDAYS };
+  });
+  const stClass = {}; (r.students || []).forEach(s => { stClass[s.id] = cmap[s.classId]; });
+  const hw = {};
+  Object.keys(r.hw || {}).forEach(d => {
+    hw[d] = {};
+    Object.keys(r.hw[d]).forEach(id => {
+      const rec = r.hw[d][id]; const c = stClass[id]; const x = {};
+      Object.keys(rec.x || {}).forEach(iid => {
+        const it = c && c.items.find(i => i.id === iid);
+        if (it && labelId[it.label]) x[labelId[it.label]] = rec.x[iid];
+      });
+      hw[d][id] = { ...rec, x };
+    });
+  });
+  const out = { ...r, v: 3, items, students, hw };
+  delete out.classes; delete out.grace;
+  return out;
+}
+function normalize(raw) {
+  let r = raw || {};
+  if (!r.v || r.v < 2) r = migrate(r);
+  if (r.v < 3) r = migrate3(r);
+  const base = newState();
+  const o = {
+    ...base, ...r,
+    items: Array.isArray(r.items) && r.items.length ? r.items : mkItems(DEFAULT_ITEMS),
+    students: (Array.isArray(r.students) ? r.students : []).map(s => (s.token ? s : Object.assign({}, s, { token: newToken() }))),
+    att: r.att && typeof r.att === 'object' ? r.att : {},
+    hw: r.hw && typeof r.hw === 'object' ? r.hw : {},
+    tpl: { ...DEFAULT_TPL, ...(r.tpl || {}) },
+  };
+  delete o.classes; delete o.grace;
+  o.start = r.start || r.created || o.created;
+  o.theme = r.theme === 'dark' ? 'dark' : 'light';
+  if ((r.v || 0) < 4 && o.items.map(i => i.label).join('|') === OLD_ITEMS) {
+    o.items = [...o.items.map((it, i) => ({ id: it.id, label: '숙제' + (i + 1) })), ...mkItems(['숙제4', '숙제5'])];
+  }
+  if ((r.v || 0) < 5) {
+    Object.keys(o.hw).forEach(d => Object.keys(o.hw[d]).forEach(id => {
+      const x = o.hw[d][id] && o.hw[d][id].x; if (!x) return;
+      Object.keys(x).forEach(k => { if (x[k] === 'p') x[k] = 'n'; });
+    }));
+  }
+  if ((r.v || 0) < 6) {
+    Object.keys(o.hw).forEach(d => Object.keys(o.hw[d]).forEach(id => {
+      const x = o.hw[d][id] && o.hw[d][id].x; if (!x) return;
+      Object.keys(x).forEach(k => { if (x[k] === 'z') delete x[k]; });
+    }));
+  }
+  o.v = DATA_VER;
+  return o;
+}
+function freshState() { const s = newState(); s.items = mkItems(DEFAULT_ITEMS); return s; }
+function loadState() {
+  try { const t = localStorage.getItem(STORE_KEY); if (t) return normalize(JSON.parse(t)); } catch (e) {}
+  return freshState();
+}
+function saveState(s) { try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e) {} }
+
+const newToken = () => {
+  const a = new Uint8Array(24);
+  if (window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(a); else for (let i = 0; i < 24; i++) a[i] = Math.floor(Math.random() * 256);
+  return Array.from(a, x => x.toString(16).padStart(2, '0')).join('');
+};
+
+/* ============================================================
+   클라우드(Supabase) 연결: 와이프 폰에 저장하면서 DB에도 올려서,
+   학부모가 링크로 언제든 최신 기록을 볼 수 있게 해요.
+   폰에 저장된 내용이 기준이고 DB는 복사본이에요(올리기 전용, 불러오기는 직접 눌러서).
+   ============================================================ */
+const SB_URL = 'https://fpmtbxfjmjwpexktbnfm.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwbXRieGZqbWp3cGV4a3RibmZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA5MjcwMjgsImV4cCI6MjEwNjUwMzAyOH0.PoKw8aYY8TJHWs2fE1Nf6gPRfQTvxaN3yfU0ZmlfUlU'; // 공개용 키(누구에게 보여도 되는 키)
+const sb = (window.supabase && window.supabase.createClient)
+  ? window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'doit-sb-auth' } })
+  : null;
+const CLOUD_KEY = 'doit-cloud-v1';
+const loadCloud = () => { try { return JSON.parse(localStorage.getItem(CLOUD_KEY)) || {}; } catch (e) { return {}; } };
+const saveCloud = c => { try { localStorage.setItem(CLOUD_KEY, JSON.stringify(c)); } catch (e) {} };
+const emptyDirty = () => ({ acad: false, students: false, del: [], days: {} });
+const dirtyCount = d => (d.acad ? 1 : 0) + (d.students ? 1 : 0) + d.del.length + Object.keys(d.days).length;
+const authMsg = e => {
+  const m = String((e && e.message) || e || '');
+  if (/invalid login/i.test(m)) return '이메일이나 비밀번호가 맞지 않아요';
+  if (/not confirmed/i.test(m)) return '이메일 확인이 아직 안 됐어요. 받은 메일(스팸함도)의 확인 링크를 누른 뒤 다시 로그인해주세요. 링크를 눌러 빈 화면이나 오류가 떠도 확인은 된 거예요';
+  if (/already registered|already been registered/i.test(m)) return '이미 가입된 이메일이에요. 로그인을 눌러주세요';
+  if (/password/i.test(m) && /6/.test(m)) return '비밀번호는 6자 이상이어야 해요';
+  if (/database error saving new user|email_not_allowed/i.test(m)) return '관리자가 등록한 이메일만 가입할 수 있어요. 관리자에게 이메일 등록을 요청해주세요';
+  if (/rate limit/i.test(m)) return '잠시 후 다시 시도해주세요';
+  if (/fetch|network/i.test(m)) return '인터넷 연결을 확인해주세요';
+  return m || '알 수 없는 오류예요';
+};
+
+function useCloud(S, setS, skipDiff) {
+  const [session, setSession] = useState(null);
+  const [status, setStatus] = useState({ s: sb ? 'off' : 'none', last: loadCloud().last || null, err: '' });
+  const [pendingN, setPendingN] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const dirtyRef = useRef(Object.assign(emptyDirty(), loadCloud().dirty || {}));
+  const prevRef = useRef(S);
+  const Sref = useRef(S); Sref.current = S;
+  const timer = useRef(); const busy = useRef(false); const again = useRef(false);
+  const persist = () => {
+    const c = loadCloud(); c.dirty = dirtyRef.current; saveCloud(c);
+    setPendingN(dirtyCount(dirtyRef.current));
+  };
+
+  useEffect(() => {
+    if (!sb) return undefined;
+    sb.auth.getSession().then(({ data }) => setSession(data.session || null));
+    const { data } = sb.auth.onAuthStateChange((_e, s) => setSession(s || null));
+    return () => { data.subscription.unsubscribe(); };
+  }, []);
+
+  useEffect(() => {
+    if (!sb || !session) { setIsAdmin(false); return undefined; }
+    let off = false;
+    sb.rpc('is_admin').then(({ data, error }) => { if (!off) setIsAdmin(!error && data === true); }, () => { if (!off) setIsAdmin(false); });
+    return () => { off = true; };
+  }, [session && session.user && session.user.id]);
+
+  const markAll = () => {
+    const d = dirtyRef.current; const S0 = Sref.current;
+    d.acad = true; d.students = true;
+    Object.keys(S0.att).concat(Object.keys(S0.hw)).forEach(dt => { d.days[dt] = true; });
+  };
+
+  const push = async () => {
+    if (!sb) return false;
+    if (busy.current) { again.current = true; return false; }
+    busy.current = true;
+    const d = dirtyRef.current;
+    const work = { acad: d.acad, students: d.students, del: d.del.slice(), days: Object.assign({}, d.days) };
+    d.acad = false; d.students = false; d.del = []; d.days = {};
+    let ok = false;
+    try {
+      const { data: sd } = await sb.auth.getSession();
+      const user = sd.session && sd.session.user;
+      if (!user) throw new Error('로그인이 필요해요');
+      const uid = user.id; const S0 = Sref.current;
+      setStatus(s => Object.assign({}, s, { s: 'syncing', err: '' }));
+      let r;
+      if (work.acad) {
+        r = await sb.from('academies').upsert({ owner_id: uid, room: S0.room, start_date: S0.start, items: S0.items, updated_at: new Date().toISOString() }, { onConflict: 'owner_id' });
+        if (r.error) throw r.error;
+      }
+      if (work.students && S0.students.length) {
+        r = await sb.from('students').upsert(S0.students.map(s => ({ owner_id: uid, id: s.id, name: s.name, days: s.days || [], token: s.token, updated_at: new Date().toISOString() })), { onConflict: 'owner_id,id' });
+        if (r.error) throw r.error;
+      }
+      if (work.del.length) {
+        r = await sb.from('students').delete().eq('owner_id', uid).in('id', work.del);
+        if (r.error) throw r.error;
+      }
+      const idset = new Set(S0.students.map(s => s.id));
+      for (const dt of Object.keys(work.days)) {
+        const att = S0.att[dt] || {}; const hw = S0.hw[dt] || {};
+        r = await sb.from('attendance').delete().eq('owner_id', uid).eq('day', dt); if (r.error) throw r.error;
+        r = await sb.from('homework').delete().eq('owner_id', uid).eq('day', dt); if (r.error) throw r.error;
+        const arows = Object.keys(att).filter(id => idset.has(id) && att[id] && att[id].s).map(id => ({ owner_id: uid, student_id: id, day: dt, status: att[id].s }));
+        const hrows = [];
+        Object.keys(hw).forEach(id => {
+          if (!idset.has(id)) return;
+          const x = (hw[id] && hw[id].x) || {};
+          Object.keys(x).forEach(iid => { if (x[iid] === 'd' || x[iid] === 'n') hrows.push({ owner_id: uid, student_id: id, day: dt, item_id: iid, status: x[iid] }); });
+        });
+        if (arows.length) { r = await sb.from('attendance').insert(arows); if (r.error) throw r.error; }
+        if (hrows.length) { r = await sb.from('homework').insert(hrows); if (r.error) throw r.error; }
+      }
+      const c = loadCloud(); c.pushedFor = uid; c.last = Date.now(); saveCloud(c);
+      setStatus({ s: 'ok', last: c.last, err: '' });
+      ok = true;
+    } catch (e) {
+      const nd = dirtyRef.current;
+      nd.acad = nd.acad || work.acad; nd.students = nd.students || work.students;
+      work.del.forEach(id => { if (!nd.del.includes(id)) nd.del.push(id); });
+      Object.keys(work.days).forEach(dt => { nd.days[dt] = true; });
+      setStatus(s => Object.assign({}, s, { s: 'error', err: authMsg(e) }));
+    }
+    busy.current = false;
+    persist();
+    if (again.current) { again.current = false; schedule(300); }
+    else if (!ok) schedule(30000);
+    return ok;
+  };
+  const schedule = ms => { clearTimeout(timer.current); timer.current = setTimeout(push, ms == null ? 1200 : ms); };
+  const syncNow = async () => {
+    clearTimeout(timer.current);
+    if (busy.current) { for (let i = 0; i < 40 && busy.current; i++) await new Promise(r => setTimeout(r, 150)); }
+    if (dirtyCount(dirtyRef.current) === 0) return true;
+    return push();
+  };
+
+  // 상태가 바뀔 때 무엇이 바뀌었는지 비교해서 올릴 목록에 넣기
+  useEffect(() => {
+    const prev = prevRef.current; prevRef.current = S;
+    if (skipDiff.current) { skipDiff.current = false; return; }
+    if (!session) return;
+    const d = dirtyRef.current;
+    if (prev.room !== S.room || prev.start !== S.start || JSON.stringify(prev.items) !== JSON.stringify(S.items)) d.acad = true;
+    const key = s => JSON.stringify(s.students.map(x => [x.id, x.name, x.days, x.token]));
+    if (key(prev) !== key(S)) {
+      d.students = true;
+      const ids = new Set(S.students.map(x => x.id));
+      prev.students.forEach(x => { if (!ids.has(x.id) && !d.del.includes(x.id)) d.del.push(x.id); });
+    }
+    const dates = new Set(Object.keys(S.att).concat(Object.keys(S.hw), Object.keys(prev.att), Object.keys(prev.hw)));
+    dates.forEach(dt => {
+      if (JSON.stringify(S.att[dt] || null) !== JSON.stringify(prev.att[dt] || null) || JSON.stringify(S.hw[dt] || null) !== JSON.stringify(prev.hw[dt] || null)) d.days[dt] = true;
+    });
+    if (dirtyCount(d) > 0) { persist(); schedule(); }
+  }, [S]);
+
+  // 처음 로그인하면 지금 폰에 있는 걸 올림. 단, 이 폰이 비어 있는데 클라우드에 기록이 있으면 덮어쓰지 않고 불러오기를 안내함
+  const [cloudHas, setCloudHas] = useState(false);
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!session) return undefined;
+    let off = false;
+    (async () => {
+      if (loadCloud().pushedFor !== session.user.id) {
+        const { count, error } = await sb.from('students').select('id', { count: 'exact', head: true });
+        if (off) return;
+        if (error) { setStatus(s => Object.assign({}, s, { s: 'error', err: authMsg(error) })); setTimeout(() => setTick(t => t + 1), 30000); return; }
+        if (count > 0 && Sref.current.students.length === 0) { setCloudHas(true); return; }
+        setCloudHas(false); markAll(); persist(); schedule(300);
+      } else if (dirtyCount(dirtyRef.current) > 0) schedule(500);
+    })();
+    const on = () => schedule(300);
+    window.addEventListener('online', on);
+    return () => { off = true; window.removeEventListener('online', on); };
+  }, [session && session.user && session.user.id, tick]);
+
+  const login = async (email, password) => {
+    if (!sb) return '연결 도구를 불러오지 못했어요. 인터넷을 확인하고 새로고침해주세요';
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    return error ? authMsg(error) : '';
+  };
+  const signup = async (email, password) => {
+    if (!sb) return { msg: '연결 도구를 불러오지 못했어요. 인터넷을 확인하고 새로고침해주세요' };
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) return { msg: authMsg(error) };
+    if (data.session) return { msg: '' };
+    // 관리자가 등록한 이메일은 가입 즉시 확인 처리되므로 바로 로그인해 봄
+    const r = await sb.auth.signInWithPassword({ email, password });
+    return r.error ? { msg: authMsg(r.error) } : { msg: '' };
+  };
+  const logout = async () => { if (sb) await sb.auth.signOut(); setSession(null); setStatus({ s: 'off', last: null, err: '' }); };
+
+  // 클라우드에 있는 기록을 이 폰으로 가져오기(폰을 바꿨을 때)
+  const pull = async () => {
+    if (!sb) return '연결 도구를 불러오지 못했어요';
+    const { data: sd } = await sb.auth.getSession();
+    if (!sd.session) return '로그인이 필요해요';
+    const all = async (table, cols, order) => {
+      let from = 0; const out = [];
+      for (;;) {
+        let q = sb.from(table).select(cols);
+        order.forEach(o => { q = q.order(o); });
+        const { data, error } = await q.range(from, from + 999);
+        if (error) throw error;
+        out.push(...data);
+        if (data.length < 1000) break;
+        from += 1000;
+      }
+      return out;
+    };
+    try {
+      const ac = await sb.from('academies').select('room,start_date,items').maybeSingle();
+      if (ac.error) throw ac.error;
+      const students = await all('students', 'id,name,days,token', ['name', 'id']);
+      if (!ac.data && students.length === 0) return '클라우드에 저장된 기록이 없어요';
+      const att = {}; const hw = {};
+      (await all('attendance', 'student_id,day,status', ['day', 'student_id'])).forEach(r => { (att[r.day] = att[r.day] || {})[r.student_id] = { s: r.status, t: '' }; });
+      (await all('homework', 'student_id,day,item_id,status', ['day', 'student_id', 'item_id'])).forEach(r => {
+        const dd = (hw[r.day] = hw[r.day] || {});
+        const rec = (dd[r.student_id] = dd[r.student_id] || { r: true, x: {}, m: '' });
+        rec.x[r.item_id] = r.status;
+      });
+      const cc = loadCloud(); cc.pushedFor = sd.session.user.id; saveCloud(cc); setCloudHas(false);
+      skipDiff.current = true;
+      setS(prev => normalize(Object.assign({}, prev, {
+        room: ac.data ? ac.data.room : prev.room, start: ac.data ? ac.data.start_date : prev.start,
+        items: ac.data && ac.data.items && ac.data.items.length ? ac.data.items : prev.items,
+        students: students.map(s => ({ id: s.id, name: s.name, days: s.days, token: s.token })), att, hw,
+      })));
+      return '';
+    } catch (e) { return authMsg(e); }
+  };
+
+  const regenToken = st => setS(prev => { const n = structuredClone(prev); const x = n.students.find(s => s.id === st.id); if (x) x.token = newToken(); return n; });
+  return { session, status, pendingN, cloudHas, isAdmin, login, signup, logout, syncNow, pull, regenToken, hasPending: () => dirtyCount(dirtyRef.current) > 0 };
+}
+
+/* ---------- 학부모 링크: 최근 10일 기록을 주소 안에 담아요(서버에 저장하지 않음) ---------- */
+const encPayload = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+function decPayload(s) {
+  try {
+    let t = s.replace(/-/g, '+').replace(/_/g, '/'); while (t.length % 4) t += '=';
+    const o = JSON.parse(decodeURIComponent(escape(atob(t))));
+    if (!o || typeof o.n !== 'string' || !Array.isArray(o.i) || !Array.isArray(o.w)) return null;
+    return o;
+  } catch (e) { return null; }
+}
+function buildPayload(S, st) {
+  const today = ymd(new Date());
+  const rows = [];
+  for (let k = 0; k < 90; k++) {
+    const d = addDays(today, -k);
+    if (d < S.start) break;
+    const dow = parseYmd(d).getDay();
+    const a = S.att[d] && S.att[d][st.id];
+    const x = (S.hw[d] && S.hw[d][st.id] && S.hw[d][st.id].x) || {};
+    const hwStr = S.items.map(it => (x[it.id] === 'd' || x[it.id] === 'n' ? x[it.id] : '-')).join('');
+    const hasHw = /[dn]/.test(hwStr);
+    if ((st.days || []).includes(dow) || a || hasHw) rows.push([d, a ? a.s : '', hwStr]);
+  }
+  return { v: 1, r: S.room, n: st.name, t: today, i: S.items.map(it => it.label), w: rows };
+}
+const linkBase = () => (typeof window.__linkBase === 'string' ? window.__linkBase : /^(https?|file):$/.test(location.protocol) ? location.href.split('#')[0] : '');
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const hashStr = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+
+/* ---------- 복사 ---------- */
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; } catch (e) {}
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch (e) { return false; }
+}
+
+/* ---------- 원생 도우미 ---------- */
+const sortByName = (a, b) => a.name.localeCompare(b.name, 'ko');
+const visibleStudents = (S, date) => {
+  const dow = parseYmd(date).getDay();
+  return S.students.filter(s => (s.days || []).includes(dow)).slice().sort(sortByName);
+};
+/* "민수 월수금" 같은 줄을 이름과 요일로 나누기 (요일이 없으면 월~금) */
+function parseBulk(text) {
+  return text.split(/[\n,]/).map(s => s.trim()).filter(Boolean).map(line => {
+    const m = line.match(/^(.+?)\s+([월화수목금토일]+)$/);
+    if (!m) return { name: line, days: WEEKDAYS };
+    const days = [...new Set(m[2].split('').map(ch => DOW.indexOf(ch)))].sort();
+    return { name: m[1].trim(), days };
+  });
+}
+
+/* ---------- 숙제 ---------- */
+const hwIssues = (S, rec) => {
+  const out = { n: [], p: [] };
+  if (!rec || !rec.x) return out;
+  S.items.forEach(it => { const v = rec.x[it.id]; if (v === 'n') out.n.push(it.label); if (v === 'p') out.p.push(it.label); });
+  return out;
+};
+function buildMessage(S, st, date, rec) {
+  const iss = hwIssues(S, rec);
+  const hasIssue = iss.n.length + iss.p.length > 0;
+  const parts = [];
+  if (iss.n.length) parts.push('안 한 것: ' + iss.n.join(', '));
+  if (iss.p.length) parts.push('미흡한 것: ' + iss.p.join(', '));
+  const map = { '{이름}': st.name, '{날짜}': fmtShort(date), '{메모}': (rec.m || '').trim(), '{교습소}': S.room, '{항목}': parts.join('\n') };
+  let out = hasIssue ? S.tpl.issue : S.tpl.done;
+  Object.keys(map).forEach(k => { out = out.split(k).join(map[k]); });
+  return out.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+/* ---------- 월 통계 ---------- */
+function monthStats(S, ym) {
+  const res = {};
+  S.students.forEach(s => { res[s.id] = { p: 0, l: 0, a: 0, ld: [], ad: [], hwN: 0, hwBy: {} }; });
+  Object.keys(S.att).filter(d => d.startsWith(ym) && d >= S.start).sort().forEach(d => {
+    const day = Number(d.slice(8));
+    Object.keys(S.att[d]).forEach(id => {
+      const r = res[id]; if (!r) return;
+      const k = S.att[d][id].s;
+      if (k === 'p') r.p++;
+      if (k === 'l') { r.l++; r.ld.push(day); }
+      if (k === 'a') { r.a++; r.ad.push(day); }
+    });
+  });
+  Object.keys(S.hw).filter(d => d.startsWith(ym) && d >= S.start).sort().forEach(d => {
+    const day = Number(d.slice(8));
+    Object.keys(S.hw[d]).forEach(id => {
+      const r = res[id]; const x = S.hw[d][id] && S.hw[d][id].x; if (!r || !x) return;
+      S.items.forEach(it => { if (x[it.id] === 'n') { r.hwN++; (r.hwBy[it.id] = r.hwBy[it.id] || []).push(day); } });
+    });
+  });
+  return res;
+}
+const rateOf = r => { const t = r.p + r.l + r.a; return t ? Math.round((r.p + r.l) / t * 100) : null; };
+
+/* ---------- 두 번 눌러 확인 ---------- */
+function useArm() {
+  const [k, setK] = useState(null);
+  const t = useRef();
+  const arm = key => { setK(key); clearTimeout(t.current); t.current = setTimeout(() => setK(null), 3000); };
+  return [k, arm, () => setK(null)];
+}
+
+/* ============================================================
+   화면
+   ============================================================ */
+function DateTitle({ date }) {
+  return html`<div className="datebar">
+    <div className="d">${fmtLong(date)} (${DOW[parseYmd(date).getDay()]})</div>
+  </div>`;
+}
+
+function Today({ S, date, today, setAtt, toggleItem, saveDay, goSettings, backupDays }) {
+  const [help, setHelp] = useState(false);
+  if (S.students.length === 0) return html`<div className="card empty"><p style=${{ marginBottom: 0 }}>등록된 원생이 없어요. <button className="link" onClick=${goSettings}>설정에서 추가하기</button></p></div>`;
+  const list = visibleStudents(S, date);
+  if (date < S.start) return html`<div className="card empty"><b>앱을 시작하기 전 날이에요</b><p>시작일은 ${fmtLong(S.start)}이에요. 그 전 날짜는 기록하지 않아요.</p></div>`;
+  if (date > today) return html`<div className="card empty"><b>아직 오지 않은 날이에요</b><p>${fmtLong(date)}에 오는 원생은 ${list.length}명이에요. 그날이 되면 출결과 숙제를 입력할 수 있어요.</p></div>`;
+  const recs = S.att[date] || {};
+  const hws = S.hw[date] || {};
+  const stored = list.length > 0 && list.every(s => recs[s.id]);
+  const cols = '58px repeat(' + (3 + S.items.length) + ', minmax(0, 1fr))';
+  return html`<div>
+    ${backupDays !== null && backupDays >= 14 && html`<div className="banner">백업한 지 ${backupDays}일 지났어요. 설정에서 백업을 해두세요.</div>`}
+    ${list.length === 0
+      ? html`<div className="card empty"><b>이 요일에 오는 원생이 없어요</b><p>설정에서 원생의 요일을 확인해주세요.</p></div>`
+      : html`<div className="list tbl">
+          <div className="grp">
+            <b>${list.length}명</b>
+            <button className="link" aria-expanded=${help} onClick=${() => setHelp(!help)}>사용법 ${help ? '▴' : '▾'}</button>
+            <span></span>
+            <button className="link" disabled=${stored} onClick=${saveDay}>${stored ? '저장됨' : '이대로 저장'}</button>
+          </div>
+          ${help && html`<div className="gnote">연한 점선 등원은 저장 전이에요. 나머지는 '이대로 저장'을 누르세요. 숙제는 누를 때마다 완료, 안함, 빈칸이에요.</div>`}
+          <div className="thead" style=${{ gridTemplateColumns: cols }}>
+            <span className="c-name">이름</span><span>등원</span><span>지각</span><span>결석</span>
+            ${S.items.map((it, i) => html`<span key=${it.id} className=${i === 0 ? 'hw0' : ''}>${it.label}</span>`)}
+          </div>
+          ${list.map(st => {
+            const rec = recs[st.id];
+            const eff = rec ? rec.s : 'p';
+            const x = (hws[st.id] && hws[st.id].x) || {};
+            return html`<div className=${'st' + (eff === 'a' ? ' absent' : '')} key=${st.id} style=${{ gridTemplateColumns: cols }}>
+              <div className="nm">${st.name}</div>
+              ${[['p', '등원'], ['l', '지각'], ['a', '결석']].map(([k, label]) => html`
+                <button key=${k} className=${'sb ' + k + (eff === k ? ' on' : '') + (eff === k && !rec ? ' pre' : '')}
+                  aria-label=${st.name + ' ' + label} aria-pressed=${eff === k} onClick=${() => setAtt(st, k)}>${eff === k ? label : '\u00a0'}</button>`)}
+              ${S.items.map((it, i) => {
+                const v = x[it.id] === 'd' || x[it.id] === 'n' ? x[it.id] : '';
+                return html`<button key=${it.id} className=${'hwc' + (v ? ' ' + v : '') + (i === 0 ? ' hw0' : '')} aria-label=${st.name + ' ' + it.label + ' ' + (v === 'd' ? '완료' : v === 'n' ? '안함' : '빈칸')} onClick=${() => toggleItem(st, it.id)}>${v === 'd' ? '완료' : v === 'n' ? '안함' : '\u00a0'}</button>`;
+              })}
+            </div>`;
+          })}
+        </div>`}
+  </div>`;
+}
+
+function ParentView({ d, back, state, retry }) {
+  const [only30, setOnly30] = useState(false);
+  const scrollRef = useRef(null);
+  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = 0; }, [only30]);
+  if (state === 'loading' || state === 'idle') return html`<div className="wrap pv"><div className="card empty"><p style=${{ marginBottom: 0 }}>기록을 불러오는 중이에요…</p></div></div>`;
+  if (state === 'error') return html`<div className="wrap pv"><div className="card empty"><p>기록을 불러오지 못했어요. 인터넷에 연결되어 있는지 확인해주세요.</p><button className="btn pri" onClick=${retry}>다시 불러오기</button></div></div>`;
+  if (!d) return html`<div className="wrap pv"><div className="card empty"><p style=${{ marginBottom: 0 }}>링크를 읽지 못했어요. 링크가 바뀌었을 수 있어요. 선생님께 새 링크를 받아주세요.</p></div></div>`;
+  const ATT = { p: '등원', l: '지각', a: '결석' };
+  const cols = '58px 52px repeat(' + d.i.length + ', minmax(0, 1fr))';
+  const cutoff = only30 ? addDays(d.t, -29) : '';
+  const rowsShown = d.w.filter(r => !cutoff || r[0] >= cutoff);
+  return html`<div className="wrap pv pvfix">
+    ${back && html`<div className="pv-fixed" style=${{ padding: '10px 0 0' }}><button className="link" onClick=${back}>← 앱으로 돌아가기</button></div>`}
+    <div className="pv-head pv-fixed">
+      <div className="room" style=${{ fontSize: '19px' }}>${d.r}</div>
+      <div className="pv-name">${d.n} 학생</div>
+      <div className="sub">출결·숙제 이력 (${fmtShort(d.t)} 기준)</div>
+    </div>
+    <div className="ptabs pv-fixed"><button className=${'ptab' + (only30 ? ' on' : '')} aria-pressed=${only30} onClick=${() => setOnly30(!only30)}>30일</button></div>
+    <div className="pv-card">
+      <div className="pv-row pv-h" style=${{ gridTemplateColumns: cols }}><span className="dt">날짜</span><span>출결</span>${d.i.map((l, i) => html`<span key=${i}>${l}</span>`)}</div>
+      <div className="pv-scroll" ref=${scrollRef}>
+        ${rowsShown.length === 0 ? html`<div className="gnote" style=${{ textAlign: 'center' }}>${only30 ? '최근 30일에는 기록이 없어요.' : '아직 기록이 없어요.'}</div>` : rowsShown.map(([dt, a, hw]) => html`
+          <div className="pv-row" key=${dt} style=${{ gridTemplateColumns: cols }}>
+            <span className="dt">${fmtShort(dt)}</span>
+            <span>${ATT[a] ? html`<span className=${'pill ' + a}>${ATT[a]}</span>` : html`<span className="dot">·</span>`}</span>
+            ${d.i.map((l, i) => html`<span key=${i}>${hw[i] === 'd' ? html`<span className="pill d">완료</span>` : hw[i] === 'n' ? html`<span className="pill n">안함</span>` : html`<span className="dot">·</span>`}</span>`)}
+          </div>`)}
+        <p className="ver" style=${{ lineHeight: 1.6 }}>${d.v >= 2 ? '링크를 열 때마다 최신 기록을 불러와요.' : '보낸 시점의 기록이에요. 최신 내용은 선생님께 다시 받아주세요.'}<br />빈 칸(·)은 기록이 없거나 해당 없음이에요.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+function Stats({ S, ym, copy, makeLink, onPreview, toast, cloud }) {
+  const [open, setOpen] = useState(null);
+  const [armed, arm, disarm] = useArm();
+  const stats = monthStats(S, ym);
+  const m = Number(ym.slice(5));
+  const students = S.students.slice().sort(sortByName);
+  const hwLines = r => S.items.filter(it => r.hwBy[it.id]).map(it => it.label + ': ' + r.hwBy[it.id].length + '회 (' + r.hwBy[it.id].map(d => d + '일').join(', ') + ')');
+  const cell = (cls, n) => html`<span className=${'num ' + cls + (n === 0 ? ' zero' : '')}>${n}</span>`;
+  return html`<div>
+    ${students.length === 0
+      ? html`<div className="card empty"><b>원생이 없어요</b><p>설정에서 원생을 먼저 등록해주세요.</p></div>`
+      : html`<div className="list tbl2">
+        <div className="mhead"><span>이름</span><span>등원</span><span>지각</span><span>결석</span><span>숙제 안함</span></div>
+        ${students.map(st => {
+          const r = stats[st.id]; const rate = rateOf(r); const isOpen = open === st.id;
+          const hl = hwLines(r);
+          return html`<div className="mrow" key=${st.id}>
+            <button className="head" aria-expanded=${isOpen} onClick=${() => setOpen(isOpen ? null : st.id)}>
+              <span className="nm">${st.name}</span>
+              ${cell('p', r.p)}${cell('l', r.l)}${cell('a', r.a)}${cell('h', r.hwN)}
+            </button>
+            ${isOpen && html`<div className="detail">
+              <div>출석률: ${rate === null ? '기록 없음' : rate + '%'}</div>
+              <div>지각: ${r.ld.length ? r.ld.map(d => d + '일').join(', ') : '없음'}</div>
+              <div>결석: ${r.ad.length ? r.ad.map(d => d + '일').join(', ') : '없음'}</div>
+              <div>숙제 안함: ${hl.length ? '' : '없음'}</div>
+              ${hl.map(line => html`<div key=${line} style=${{ paddingLeft: '10px' }}>${line}</div>`)}
+              <div className="btns">
+                <button className="btn sm" onClick=${() => onPreview(st)}>학부모 화면 미리보기</button>
+                <button className="btn sm" onClick=${async () => { const l = await makeLink(st); if (!l) toast('링크를 만들 수 없어요. 로그인과 인터넷 연결을 확인해주세요'); else copy(l, st.name + ' 학부모 링크'); }}>링크 복사</button>
+                <button className=${'btn sm' + (armed === 'rg' + st.id ? ' danger armed' : '') + (cloud && cloud.session ? '' : ' dim')} onClick=${() => { if (!(cloud && cloud.session)) { toast('클라우드에 로그인하면 쓸 수 있어요. 설정에서 로그인해주세요'); return; } if (armed === 'rg' + st.id) { cloud.regenToken(st); disarm(); toast('새 링크를 만들었어요. 이전에 보낸 링크는 열리지 않아요'); } else arm('rg' + st.id); }}>${armed === 'rg' + st.id ? '한 번 더' : '링크 새로 만들기'}</button>
+              </div>
+            </div>`}
+          </div>`;
+        })}
+      </div>
+      <p className="ver">숫자는 저장한 날의 횟수예요. 숙제 안함은 안함으로 표시한 항목 수이고, 이름을 누르면 날짜가 나와요.</p>`}
+  </div>`;
+}
+
+/* ---------- 설정: 원생 편집 ---------- */
+function DaysPicker({ days, setDays }) {
+  const toggle = d => setDays(days.includes(d) ? days.filter(x => x !== d) : [...days, d].sort());
+  return html`<div className="days">${[1, 2, 3, 4, 5, 6, 0].map(d => html`
+    <button key=${d} className=${'day' + (days.includes(d) ? ' on' : '')} aria-pressed=${days.includes(d)} onClick=${() => toggle(d)}>${DOW[d]}</button>`)}</div>`;
+}
+
+function StudentEditor({ student, onSave, onCancel }) {
+  const [name, setName] = useState(student ? student.name : '');
+  const [days, setDays] = useState(student ? student.days || [] : WEEKDAYS);
+  return html`<div className="card">
+    <h2>${student ? '원생 수정' : '원생 추가'}</h2>
+    <div className="field"><label>이름 (별칭이나 이름 일부를 권장해요)</label>
+      <input className="inp" value=${name} onChange=${e => setName(e.target.value)} placeholder="예: 민수" /></div>
+    <div className="field"><label>오는 요일</label><${DaysPicker} days=${days} setDays=${setDays} /></div>
+    <div className="btns">
+      <button className="btn pri" disabled=${!name.trim()} onClick=${() => onSave({ id: student ? student.id : uid(), name: name.trim(), days })}>저장</button>
+      <button className="btn" onClick=${onCancel}>취소</button>
+    </div>
+  </div>`;
+}
+
+function BulkAdd({ onSave, onCancel }) {
+  const [text, setText] = useState('');
+  const parsed = parseBulk(text);
+  return html`<div className="card">
+    <h2>원생 여러 명 추가</h2>
+    <div className="field"><label>한 줄에 한 명씩 쓰세요. 이름 뒤에 요일을 쓰면 그 요일에만 와요. 요일을 안 쓰면 월~금이에요.</label>
+      <textarea className="ta" style=${{ minHeight: '180px' }} value=${text} onChange=${e => setText(e.target.value)} placeholder=${'민수 월수금\n지아 화목\n도윤'}></textarea></div>
+    ${parsed.length > 0 && html`<p className="note">${parsed.slice(0, 4).map(p => p.name + '(' + p.days.map(d => DOW[d]).join('') + ')').join(', ')}${parsed.length > 4 ? ' 외 ' + (parsed.length - 4) + '명' : ''}</p>`}
+    <div className="btns">
+      <button className="btn pri" disabled=${!parsed.length} onClick=${() => onSave(parsed)}>${parsed.length}명 추가</button>
+      <button className="btn" onClick=${onCancel}>취소</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- 엑셀 저장/불러오기 ---------- */
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+const ATT_LABEL = { p: '등원', l: '지각', a: '결석' };
+const ATT_KEY = { 등원: 'p', 지각: 'l', 결석: 'a' };
+const HW_LABEL = { d: '완료', n: '안함' };
+const HW_KEY = { 완료: 'd', 안함: 'n' };
+
+function buildXlsx(S) {
+  const nameOf = {}; S.students.forEach(s => { nameOf[s.id] = s.name; });
+  const wb = XLSX.utils.book_new();
+  const add = (name, rows, widths) => {
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = widths.map(w => ({ wch: w }));
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  };
+  add('원생', [['이름', '요일'], ...S.students.slice().sort(sortByName).map(s => [s.name, (s.days || []).map(d => DOW[d]).join('')])], [16, 12]);
+  add('숙제항목', [['항목'], ...S.items.map(i => [i.label])], [16]);
+  const att = [['날짜', '이름', '상태']];
+  Object.keys(S.att).sort().forEach(d => Object.keys(S.att[d]).forEach(id => {
+    if (nameOf[id] && ATT_LABEL[S.att[d][id].s]) att.push([d, nameOf[id], ATT_LABEL[S.att[d][id].s]]);
+  }));
+  add('출결', att, [14, 16, 10]);
+  const hw = [['날짜', '이름', '항목', '상태']];
+  Object.keys(S.hw).sort().forEach(d => Object.keys(S.hw[d]).forEach(id => {
+    const x = (S.hw[d][id] && S.hw[d][id].x) || {};
+    if (!nameOf[id]) return;
+    S.items.forEach(it => { if (HW_LABEL[x[it.id]]) hw.push([d, nameOf[id], it.label, HW_LABEL[x[it.id]]]); });
+  }));
+  add('숙제', hw, [14, 16, 14, 10]);
+  add('설정', [['교습소 이름', S.room], ['시작일', S.start]], [16, 24]);
+  return XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+}
+
+function normDate(v) {
+  if (typeof v === 'number') {
+    const d = new Date(Math.round((v - 25569) * 86400000));
+    return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
+  }
+  const m = String(v || '').trim().match(/^(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+  return m ? m[1] + '-' + pad(Number(m[2])) + '-' + pad(Number(m[3])) : null;
+}
+
+function parseXlsx(buf, S) {
+  const wb = XLSX.read(buf, { type: 'array' });
+  const rows = name => wb.Sheets[name] ? XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, defval: '' }).slice(1) : null;
+  const stuRows = rows('원생');
+  if (!stuRows) throw new Error('"원생" 시트를 찾지 못했어요. 이 앱에서 저장한 엑셀 파일을 쓰거나 시트 이름을 확인해주세요');
+  const students = []; const idByName = {};
+  stuRows.forEach(r => {
+    const name = String(r[0] || '').trim(); if (!name) return;
+    if (idByName[name]) throw new Error('이름이 같은 원생이 있어요: ' + name + '. 이름을 구분해서 적어주세요');
+    const dayText = String(r[1] || '');
+    const days = [...new Set(dayText.split('').filter(ch => DOW.includes(ch)).map(ch => DOW.indexOf(ch)))].sort();
+    const st = { id: uid(), name, days: days.length ? days : WEEKDAYS, token: newToken() };
+    idByName[name] = st.id; students.push(st);
+  });
+  const labels = [...new Set((rows('숙제항목') || []).map(r => String(r[0] || '').trim()).filter(Boolean))];
+  const items = labels.length ? labels.map(l => S.items.find(o => o.label === l) || { id: uid(), label: l }) : mkItems(DEFAULT_ITEMS);
+  const itemId = {}; items.forEach(i => { itemId[i.label] = i.id; });
+  let skipped = 0, nAtt = 0, nHw = 0;
+  const att = {}, hw = {};
+  (rows('출결') || []).forEach(r => {
+    if (!String(r[0] || '').trim() && !String(r[1] || '').trim()) return;
+    const d = normDate(r[0]), id = idByName[String(r[1] || '').trim()], k = ATT_KEY[String(r[2] || '').trim()];
+    if (!d || !id || !k) { skipped++; return; }
+    att[d] = att[d] || {}; att[d][id] = { s: k, t: '' }; nAtt++;
+  });
+  (rows('숙제') || []).forEach(r => {
+    if (!String(r[0] || '').trim() && !String(r[1] || '').trim()) return;
+    if (String(r[3] || '').trim() === '없음') return; // 빈칸과 같아서 기록하지 않음
+    const d = normDate(r[0]), id = idByName[String(r[1] || '').trim()], iid = itemId[String(r[2] || '').trim()], k = HW_KEY[String(r[3] || '').trim()];
+    if (!d || !id || !iid || !k) { skipped++; return; }
+    hw[d] = hw[d] || {}; hw[d][id] = hw[d][id] || { r: true, x: {}, m: '' }; hw[d][id].x[iid] = k; nHw++;
+  });
+  let room = S.room; let start = S.start;
+  if (wb.Sheets['설정']) { // 설정 시트는 첫 줄부터 데이터
+    XLSX.utils.sheet_to_json(wb.Sheets['설정'], { header: 1, defval: '' }).forEach(r => {
+      if (String(r[0] || '').trim() === '교습소 이름' && String(r[1] || '').trim()) room = String(r[1]).trim();
+      if (String(r[0] || '').trim() === '시작일' && normDate(r[1])) start = normDate(r[1]);
+    });
+  }
+  const next = { ...freshState(), room, items, students, att, hw, tpl: S.tpl, created: S.created, start, lastBackup: ymd(new Date()) };
+  return { next, summary: { students: students.length, att: nAtt, hw: nHw, skipped } };
+}
+
+/* 파일 저장: 미리보기에서는 viewer 저장 기능, 일반 웹에서는 브라우저 다운로드 */
+async function downloadFile(name, buf) {
+  try {
+    if (window.claude && window.claude.use) {
+      const d = await window.claude.use('downloads');
+      if (d) { await d.save({ filename: name, data: buf }); return 'saved'; }
+    }
+  } catch (e) { if (e && e.code === 'declined') return 'declined'; }
+  const blob = new Blob([buf], { type: XLSX_MIME });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  return 'saved';
+}
+
+function Admin({ toast, myEmail }) {
+  const [rows, setRows] = useState(null);
+  const [err, setErr] = useState('');
+  const [em, setEm] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [armed, arm, disarm] = useArm();
+  const errText = e => /forbidden/.test(String((e && e.message) || e)) ? '관리자만 쓸 수 있어요' : /invalid_email/.test(String((e && e.message) || e)) ? '이메일 형식을 확인해주세요' : /cannot_remove_admin/.test(String((e && e.message) || e)) ? '관리자 이메일은 지울 수 없어요' : authMsg(e);
+  const load = async () => {
+    const { data, error } = await sb.rpc('admin_list_emails');
+    if (error) setErr(errText(error)); else { setRows(data || []); setErr(''); }
+  };
+  useEffect(() => { load(); }, []);
+  const add = async () => {
+    setBusy(true);
+    const { error } = await sb.rpc('admin_add_email', { p_email: em });
+    setBusy(false);
+    if (error) { toast(errText(error)); return; }
+    setEm(''); toast('이메일을 등록했어요'); load();
+  };
+  const remove = async email => {
+    if (armed !== 'rm' + email) { arm('rm' + email); return; }
+    disarm();
+    const { error } = await sb.rpc('admin_remove_email', { p_email: email });
+    if (error) { toast(errText(error)); return; }
+    toast('이메일을 지웠어요. 그 사람은 더 이상 로그인할 수 없어요'); load();
+  };
+  const dateText = t => new Date(t).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
+  return html`<div>
+    <div className="card">
+      <div className="chead"><h2>등록된 이메일</h2></div>
+      <p>여기에 등록된 이메일만 가입하고 로그인할 수 있어요. 지워도 그 사람의 기록은 남아 있고 로그인만 막혀요.</p>
+      ${err && html`<p style=${{ color: 'var(--abs)' }} role="alert">${err}</p>`}
+      ${rows === null && !err && html`<p>불러오는 중이에요…</p>`}
+      ${(rows || []).map(r => html`<div className="srow" key=${r.email}>
+        <div className="info"><b>${r.email}</b>
+          <small>${r.is_admin ? '관리자 · ' : ''}${r.joined ? '가입됨' + (r.last_sign_in ? ' · 마지막 로그인 ' + dateText(r.last_sign_in) : '') : '아직 가입 안 함'}</small></div>
+        ${!r.is_admin && html`<button className=${'btn danger' + (armed === 'rm' + r.email ? ' armed' : '')} onClick=${() => remove(r.email)}>${armed === 'rm' + r.email ? '한 번 더' : '삭제'}</button>`}
+      </div>`)}
+    </div>
+    <div className="card">
+      <div className="chead"><h2>이메일 등록</h2>
+        <button className="btn sm pri" disabled=${busy || !em.trim()} onClick=${add}>등록</button></div>
+      <input className="inp" type="email" placeholder="예: teacher@naver.com" value=${em} onChange=${e => setEm(e.target.value)} />
+      <p style=${{ margin: '10px 0 0' }}>등록한 이메일의 주인이 앱에서 비밀번호를 정해 가입하면 바로 쓸 수 있어요. ${myEmail ? '지금 로그인한 계정: ' + myEmail : ''}</p>
+    </div>
+  </div>`;
+}
+
+function Settings({ S, mutate, replaceAll, toast, date, cloud }) {
+  const [em, setEm] = useState('');
+  const [pw, setPw] = useState('');
+  const [cmsg, setCmsg] = useState('');
+  const [cbusy, setCbusy] = useState(false);
+  const [taps, setTaps] = useState(0);
+  const dev = taps >= 5;
+  const [edit, setEdit] = useState(null); // {type, obj}
+  const [pending, setPending] = useState(null);
+  const [itemsText, setItemsText] = useState(null);
+  const [roomText, setRoomText] = useState(null);
+  const [startText, setStartText] = useState(null);
+  const [armed, arm, disarm] = useArm();
+  const markBackup = () => mutate(n => { n.lastBackup = ymd(new Date()); });
+
+  const saveExcel = async () => {
+    if (!window.XLSX) { toast('엑셀 도구를 불러오지 못했어요. 인터넷 연결을 확인해주세요'); return; }
+    try {
+      const res = await downloadFile('두잇잉글리쉬_백업_' + ymd(new Date()) + '.xlsx', buildXlsx(S));
+      if (res !== 'declined') { markBackup(); toast('엑셀로 저장했어요'); }
+    } catch (e) { toast('저장하지 못했어요'); }
+  };
+  const onExcelFile = e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    if (!window.XLSX) { toast('엑셀 도구를 불러오지 못했어요. 인터넷 연결을 확인해주세요'); return; }
+    const r = new FileReader();
+    r.onload = () => { try { setPending(parseXlsx(r.result, S)); } catch (err) { toast(err.message || '엑셀 파일을 읽지 못했어요'); } };
+    r.readAsArrayBuffer(f);
+  };
+  const doReset = () => {
+    if (armed !== 'reset') { arm('reset'); return; }
+    replaceAll(freshState()); disarm(); toast('모든 데이터를 삭제했어요');
+  };
+  const saveStudent = s => {
+    mutate(n => { const i = n.students.findIndex(x => x.id === s.id); if (i >= 0) n.students[i] = Object.assign({}, s, { token: n.students[i].token || newToken() }); else n.students.push(Object.assign({}, s, { token: newToken() })); });
+    setEdit(null);
+  };
+  const saveBulk = list => {
+    mutate(n => { list.forEach(p => n.students.push({ id: uid(), name: p.name, days: p.days, token: newToken() })); });
+    setEdit(null); toast(list.length + '명을 추가했어요');
+  };
+  const delStudent = id => {
+    if (armed !== 'ds' + id) { arm('ds' + id); return; }
+    mutate(n => { n.students = n.students.filter(x => x.id !== id); });
+    disarm();
+  };
+  const saveItems = () => {
+    const labels = [...new Set(itemsText.split('\n').map(s => s.trim()).filter(Boolean))];
+    if (!labels.length) { toast('숙제 항목을 하나 이상 적어주세요'); return; }
+    mutate(n => { n.items = labels.map(l => n.items.find(o => o.label === l) || { id: uid(), label: l }); });
+    setItemsText(null); toast('숙제 항목을 저장했어요');
+  };
+  const saveStart = () => {
+    const v = startText;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v || '')) { toast('시작일을 골라주세요'); return; }
+    if (v > ymd(new Date())) { toast('시작일은 오늘보다 뒤로 정할 수 없어요'); return; }
+    mutate(n => { n.start = v; });
+    setStartText(null); toast('시작일을 저장했어요');
+  };
+  const seedTen = () => {
+    mutate(n => {
+      const today = ymd(new Date());
+      for (let k = 1; k <= 50; k++) {
+        const d = addDays(today, -k); const dow = parseYmd(d).getDay();
+        n.students.forEach(st => {
+          if (!(st.days || []).includes(dow)) return;
+          const rnd = mulberry32(hashStr(st.id + d));
+          n.att[d] = n.att[d] || {}; n.hw[d] = n.hw[d] || {};
+          let a = n.att[d][st.id];
+          if (!a) { const r = rnd(); a = { s: r < 0.82 ? 'p' : r < 0.92 ? 'l' : 'a', t: '' }; n.att[d][st.id] = a; }
+          if (a.s !== 'a' && !n.hw[d][st.id]) {
+            const x = {};
+            n.items.forEach(it => { const r = rnd(); if (r < 0.7) x[it.id] = 'd'; else if (r < 0.8) x[it.id] = 'n'; });
+            n.hw[d][st.id] = { r: true, x, m: '' };
+          }
+        });
+      }
+      const first = addDays(today, -50); if (n.start > first) n.start = first;
+    });
+    toast('지난 50일 예시 기록을 넣었어요');
+  };
+  const saveRoom = () => {
+    const v = roomText.trim();
+    if (!v) { toast('교습소 이름을 적어주세요'); return; }
+    mutate(n => { n.room = v; });
+    setRoomText(null); toast('교습소 이름을 저장했어요');
+  };
+
+  if (edit) {
+    if (edit.type === 'student') return html`<${StudentEditor} student=${edit.obj} onSave=${saveStudent} onCancel=${() => setEdit(null)} />`;
+    return html`<${BulkAdd} onSave=${saveBulk} onCancel=${() => setEdit(null)} />`;
+  }
+
+  const students = S.students.slice().sort(sortByName);
+  const curItemsText = S.items.map(i => i.label).join('\n');
+  return html`<div>
+    <div className="card">
+      <div className="chead">
+        <h2>원생 ${students.length}명</h2>
+        <div className="btns">
+          <button className="btn sm" onClick=${() => setEdit({ type: 'bulk' })}>여러 명 추가</button>
+          <button className="btn sm" onClick=${() => setEdit({ type: 'student', obj: null })}>한 명 추가</button>
+        </div>
+      </div>
+      ${students.map(s => html`<div className="srow" key=${s.id}>
+        <div className="info"><b>${s.name}</b><small>${daysText(s.days)}</small></div>
+        <button className="btn" onClick=${() => setEdit({ type: 'student', obj: s })}>수정</button>
+        <button className=${'btn danger' + (armed === 'ds' + s.id ? ' armed' : '')} onClick=${() => delStudent(s.id)}>${armed === 'ds' + s.id ? '한 번 더' : '삭제'}</button>
+      </div>`)}
+    </div>
+
+    <div className="card">
+      <div className="chead">
+        <h2>숙제 항목</h2>
+        <button className="btn sm pri" disabled=${itemsText === null || itemsText === curItemsText} onClick=${saveItems}>저장</button>
+      </div>
+      <p>모든 원생에게 공통으로 적용돼요. 한 줄에 하나씩 쓰세요. 항목 이름을 바꾸면 이전 기록은 새 항목과 연결되지 않아요.</p>
+      <textarea className="ta" value=${itemsText === null ? curItemsText : itemsText} onChange=${e => setItemsText(e.target.value)}></textarea>
+    </div>
+
+    <div className="card">
+      <div className="chead">
+        <h2>교습소 이름</h2>
+        <button className="btn sm pri" disabled=${roomText === null || roomText.trim() === S.room} onClick=${saveRoom}>저장</button>
+      </div>
+      <input className="inp" value=${roomText === null ? S.room : roomText} onChange=${e => setRoomText(e.target.value)} />
+    </div>
+
+    <div className="card">
+      <div className="btns">
+        ${[['light', '라이트'], ['dark', '다크']].map(([k, label]) => html`
+          <button key=${k} className=${'btn sm' + (S.theme === k ? ' pri' : '')} aria-pressed=${S.theme === k} onClick=${() => mutate(n => { n.theme = k; })}>${label}</button>`)}
+      </div>
+    </div>
+
+    <div className="card">
+      <div className="chead">
+        <h2>사용 시작일</h2>
+        <button className="btn sm pri" disabled=${startText === null || startText === S.start} onClick=${saveStart}>저장</button>
+      </div>
+      <p>이 날짜 이전은 화면과 현황에서 보이지 않아요. 기록을 지우는 건 아니고, 시작일을 앞으로 당기면 다시 보여요.</p>
+      <input className="inp" type="date" max=${ymd(new Date())} value=${startText === null ? S.start : startText} onChange=${e => setStartText(e.target.value)} />
+    </div>
+
+    <div className="card">
+      <div className="chead">
+        <h2>클라우드</h2>
+        ${cloud.session && html`<button className="btn sm" disabled=${cbusy || cloud.status.s === 'syncing'} onClick=${async () => { setCbusy(true); const ok = await cloud.syncNow(); setCbusy(false); toast(ok ? '올렸어요' : '올리지 못했어요. 인터넷을 확인해주세요'); }}>지금 올리기</button>`}
+      </div>
+      ${!cloud.session ? html`<div>
+        <p>관리자가 등록한 이메일만 쓸 수 있어요. 처음이면 비밀번호를 정해서 가입을 누르세요. 로그인하면 기록이 자동으로 클라우드에 올라가고, 학부모가 링크로 언제든 최신 기록을 볼 수 있어요.</p>
+        <div className="field"><input className="inp" type="email" autoComplete="username" placeholder="이메일" value=${em} onChange=${e => setEm(e.target.value)} /></div>
+        <div className="field"><input className="inp" type="password" autoComplete="current-password" placeholder="비밀번호 (6자 이상)" value=${pw} onChange=${e => setPw(e.target.value)} /></div>
+        <div className="btns">
+          <button className="btn sm pri" disabled=${cbusy || !em || !pw} onClick=${async () => { setCbusy(true); setCmsg(''); const m = await cloud.login(em.trim(), pw); setCbusy(false); if (m) setCmsg(m); else { setPw(''); toast('로그인했어요'); } }}>로그인</button>
+          <button className="btn sm" disabled=${cbusy || !em || !pw} onClick=${async () => { setCbusy(true); setCmsg(''); const r = await cloud.signup(em.trim(), pw); setCbusy(false); setCmsg(r.msg); }}>처음이면 가입</button>
+        </div>
+        ${cmsg && html`<p style=${{ margin: '10px 0 0', color: 'var(--abs)' }} role="alert">${cmsg}</p>`}
+      </div>` : html`<div>
+        ${cloud.cloudHas && html`<div className="banner" role="alert">클라우드에 저장된 기록이 있어요. 이 폰은 비어 있어서 자동으로 올리지 않았어요. 아래 <b>클라우드에서 불러오기</b>를 눌러주세요.</div>`}
+        <p>${cloud.session.user.email}로 연결됨. ${cloud.status.s === 'error' ? '올리지 못한 기록이 ' + cloud.pendingN + '건 있어요: ' + cloud.status.err : cloud.pendingN > 0 ? '올릴 기록이 ' + cloud.pendingN + '건 대기 중이에요.' : cloud.status.last ? '모두 올라갔어요. (마지막 ' + new Date(cloud.status.last).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) + ')' : '아직 올린 기록이 없어요.'}</p>
+        <div className="btns">
+          <button className=${'btn sm' + (armed === 'pull' ? ' danger armed' : '')} disabled=${cbusy} onClick=${async () => { if (armed !== 'pull') { arm('pull'); return; } disarm(); setCbusy(true); const m = await cloud.pull(); setCbusy(false); toast(m || '클라우드에서 불러왔어요'); }}>${armed === 'pull' ? '지금 폰의 기록을 덮어써요. 한 번 더' : '클라우드에서 불러오기'}</button>
+          <button className="btn sm" onClick=${() => cloud.logout()}>로그아웃</button>
+        </div>
+      </div>`}
+    </div>
+
+    <div className="card">
+      <div className="chead">
+        <h2>엑셀 백업과 복원</h2>
+        <div className="btns">
+          <button className="btn sm pri" onClick=${saveExcel}>엑셀로 저장</button>
+          <label className="btn sm filebtn">엑셀 불러오기<input type="file" accept=".xlsx" onChange=${onExcelFile} /></label>
+        </div>
+      </div>
+      <p>원생, 숙제 항목, 출결, 숙제 기록이 시트별로 저장돼요. 엑셀에서 원생 이름과 요일을 고쳐서 다시 불러와도 돼요. 데이터는 이 기기의 브라우저에만 저장되니 가끔 저장해두세요.${S.lastBackup ? ' 마지막 저장: ' + S.lastBackup : ' 아직 저장한 적이 없어요.'}</p>
+      ${pending && html`<div className="banner" role="alert">
+        <div>원생 ${pending.next.students.length}명, 출결 ${pending.summary.att}건, 숙제 ${pending.summary.hw}건을 불러와요.${pending.summary.skipped ? ' 이름이나 형식이 맞지 않는 ' + pending.summary.skipped + '줄은 건너뛰어요.' : ''} 지금 데이터는 사라져요.</div>
+        <div className="btns" style=${{ marginTop: '8px' }}>
+          <button className="btn danger armed" onClick=${() => { replaceAll(pending.next); setPending(null); toast('불러왔어요'); }}>불러오기</button>
+          <button className="btn" onClick=${() => setPending(null)}>취소</button>
+        </div>
+      </div>`}
+    </div>
+
+    ${dev && html`<div className="card">
+      <h2>개발자용</h2>
+      <p>테스트용이에요. 원생, 숙제 항목, 교습소 이름은 지우지 않아요.</p>
+      <div className="field"><label>예시 기록</label>
+        <div className="btns">
+          <button className=${'btn' + (armed === 'devseed' ? ' danger armed' : '')} disabled=${S.students.length === 0}
+            onClick=${() => { if (armed === 'devseed') { seedTen(); disarm(); } else arm('devseed'); }}>${armed === 'devseed' ? '한 번 더' : '지난 50일 예시 기록 넣기'}</button>
+        </div>
+        <p style=${{ margin: '6px 0 0' }}>기록이 없는 날만 채우고, 시작일을 50일 전으로 당겨요.</p></div>
+      <div className="field"><label>선택한 날짜(${fmtLong(date)})만</label>
+        <div className="btns">
+          ${[['devhw', '숙제만', n => { delete n.hw[date]; }, '이 날 숙제 기록을 지웠어요'],
+             ['devatt', '출결만', n => { delete n.att[date]; }, '이 날 출결 기록을 지웠어요'],
+             ['devday', '출결·숙제 모두', n => { delete n.hw[date]; delete n.att[date]; }, '이 날 출결·숙제를 초기화했어요']].map(([k, label, fn, msg]) => html`
+            <button key=${k} className=${'btn danger' + (armed === k ? ' armed' : '')}
+              onClick=${() => { if (armed === k) { mutate(fn); disarm(); toast(msg); } else arm(k); }}>${armed === k ? '한 번 더' : label}</button>`)}
+        </div></div>
+      <div className="field" style=${{ marginBottom: 0 }}><label>모든 날짜</label>
+        <div className="btns">
+          <button className=${'btn danger' + (armed === 'devall' ? ' armed' : '')}
+            onClick=${() => { if (armed === 'devall') { mutate(n => { n.att = {}; n.hw = {}; }); disarm(); toast('모든 날짜의 출결·숙제를 초기화했어요'); } else arm('devall'); }}>${armed === 'devall' ? '정말 모두 지워요. 한 번 더' : '출결·숙제 모두 초기화'}</button>
+        </div></div>
+    </div>`}
+
+    <div className="card">
+      <h2 onClick=${() => setTaps(taps + 1)}>버전 ${VERSION}</h2>
+      ${CHANGELOG.map(c => html`<p key=${c.v} style=${{ marginBottom: '6px' }}><b>${c.v}</b> (${c.d}) ${c.n.join(' ')}</p>`)}
+      <div style=${{ marginTop: '12px' }}>
+        <button className=${'btn danger' + (armed === 'reset' ? ' armed' : '')} onClick=${doReset}>${armed === 'reset' ? '정말 모두 삭제해요. 한 번 더' : '모든 데이터 삭제'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   앱 본체
+   ============================================================ */
+function App() {
+  const [S, setS] = useState(loadState);
+  const [tab, setTab] = useState('today');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
+  const todayStr = ymd(new Date());
+  const [date, setDate] = useState(todayStr);
+  const [ym, setYm] = useState(todayStr.slice(0, 7));
+  const [msg, setMsg] = useState('');
+  const [sheet, setSheet] = useState(null);
+  const tmr = useRef();
+
+  const [hash, setHash] = useState(location.hash);
+  useEffect(() => { const f = () => setHash(location.hash); window.addEventListener('hashchange', f); return () => window.removeEventListener('hashchange', f); }, []);
+  const parentData = hash.startsWith('#p=') ? decPayload(hash.slice(3)) : null;
+  const pvToken = hash.startsWith('#s=') ? hash.slice(3) : '';
+  const isParent = hash.startsWith('#p=') || hash.startsWith('#s=');
+  const [pv, setPv] = useState({ st: 'idle', d: null });
+  const [pvTry, setPvTry] = useState(0);
+  useEffect(() => {
+    if (!pvToken) return undefined;
+    let off = false;
+    setPv({ st: 'loading', d: null });
+    if (!sb) { setPv({ st: 'error', d: null }); return undefined; }
+    sb.rpc('parent_view', { p_token: pvToken }).then(({ data, error }) => {
+      if (off) return;
+      if (error) setPv({ st: 'error', d: null }); else if (!data) setPv({ st: 'none', d: null }); else setPv({ st: 'ok', d: data });
+    }, () => { if (!off) setPv({ st: 'error', d: null }); });
+    return () => { off = true; };
+  }, [pvToken, pvTry]);
+  const skipDiff = useRef(false);
+  const cloud = useCloud(S, setS, skipDiff);
+  useEffect(() => { if (!isParent) saveState(S); }, [S, isParent]);
+  useEffect(() => {
+    const root = document.documentElement;
+    const dark = isParent ? window.matchMedia('(prefers-color-scheme: dark)').matches : S.theme === 'dark';
+    root.setAttribute('data-theme', dark ? 'dark' : 'light');
+    root.style.colorScheme = dark ? 'dark' : 'light';
+  }, [S.theme, isParent]);
+
+  const mutate = fn => setS(prev => { const n = structuredClone(prev); fn(n); return n; });
+  const replaceAll = n => setS(n);
+  const toast = t => { setMsg(t); clearTimeout(tmr.current); tmr.current = setTimeout(() => setMsg(''), 2600); };
+
+  /* 아직 저장 안 된 출결만 기본값(등원)으로 채움. 이미 누른 칸과 숙제 칸은 그대로 */
+  const fillDefaults = (n, list) => {
+    n.att[date] = n.att[date] || {};
+    list.forEach(st => { if (!n.att[date][st.id]) n.att[date][st.id] = { s: 'p', t: '' }; });
+  };
+  /* 출결: 누른 원생의 출결만 저장. 지각·결석을 한 번 더 누르면 등원으로 돌아옴 */
+  const setAtt = (st, k) => {
+    if (date > todayStr || date < S.start) return;
+    const cur = (S.att[date] || {})[st.id];
+    const next = cur && cur.s === k && k !== 'p' ? 'p' : k;
+    mutate(n => { n.att[date] = n.att[date] || {}; n.att[date][st.id] = { s: next, t: '' }; });
+  };
+  /* 숙제: 누른 칸만 저장. 빈칸(기본) → 완료 → 안함 → 빈칸 */
+  const toggleItem = (st, itemId) => {
+    if (date > todayStr || date < S.start) return;
+    const cur = ((S.hw[date] || {})[st.id] || { x: {} }).x[itemId];
+    mutate(n => {
+      n.hw[date] = n.hw[date] || {};
+      const rec = n.hw[date][st.id] || { r: true, x: {}, m: '' };
+      const x = { ...(rec.x || {}) };
+      if (!cur || cur === 'z') x[itemId] = 'd'; else if (cur === 'd') x[itemId] = 'n'; else delete x[itemId];
+      n.hw[date][st.id] = { ...rec, r: true, x };
+    });
+  };
+  const saveDay = () => { if (date > todayStr || date < S.start) return; mutate(n => fillDefaults(n, visibleStudents(S, date))); toast('남은 칸을 기본값으로 저장했어요'); };
+
+  const copy = async (text, label) => {
+    const ok = await copyText(text);
+    if (ok) toast(label + ' 복사됨. 카톡에 붙여넣으세요');
+    else setSheet({ title: label, text });
+  };
+
+  const since = S.lastBackup || S.created;
+  const backupDays = S.students.length ? Math.floor((parseYmd(todayStr) - parseYmd(since)) / 86400000) : null;
+
+  /* 로그인돼 있으면 DB를 읽는 링크(#s=), 아니면 예전처럼 기록을 담은 링크(#p=) */
+  const hashFor = async st => {
+    if (cloud.session && sb) {
+      if (cloud.hasPending()) { const ok = await cloud.syncNow(); if (!ok) return ''; }
+      return '#s=' + st.token;
+    }
+    return '#p=' + encPayload(buildPayload(S, st));
+  };
+  const makeLink = async st => { const base = linkBase(); if (!base) return ''; const h = await hashFor(st); return h ? base + h : ''; };
+  const onPreview = async st => { const h = await hashFor(st); if (!h) { toast('아직 올라가지 않았어요. 잠시 후 다시 눌러주세요'); return; } location.hash = h; window.scrollTo(0, 0); };
+  if (isParent) {
+    const back = S.students.length > 0 ? () => { location.hash = ''; } : null;
+    if (pvToken) return html`<${ParentView} d=${pv.d} state=${pv.st} back=${back} retry=${() => setPvTry(pvTry + 1)} />`;
+    return html`<${ParentView} d=${parentData} state=${parentData ? 'ok' : 'none'} back=${back} />`;
+  }
+  const curYm = todayStr.slice(0, 7);
+  const adminShown = adminOpen && cloud.isAdmin;
+  const inStats = !settingsOpen && !adminShown && tab === 'stats';
+  const goPrev = () => (inStats ? setYm(shiftMonth(ym, -1)) : setDate(addDays(date, -1)));
+  const goNext = () => (inStats ? setYm(shiftMonth(ym, 1)) : setDate(addDays(date, 1)));
+  const goNow = () => (inStats ? setYm(curYm) : setDate(todayStr));
+  const atNow = inStats ? ym === curYm : date === todayStr;
+  const atStart = inStats ? ym <= S.start.slice(0, 7) : date <= S.start;
+  const headText = settingsOpen || adminShown ? '' : inStats ? ym.slice(0, 4) + '년 ' + Number(ym.slice(5)) + '월' : fmtLong(date) + ' (' + DOW[parseYmd(date).getDay()] + ')';
+  const toggleStats = () => { if (settingsOpen || adminShown) { setSettingsOpen(false); setAdminOpen(false); setTab('stats'); } else setTab(tab === 'stats' ? 'today' : 'stats'); };
+  return html`<div>
+    <div className="wrap topwrap">
+      <div className="top">
+        <div className="ttl">
+          <span className="room">${S.room}</span>
+          ${headText && html`<span className=${'tdate' + (atNow ? '' : ' off')}>${headText}</span>`}
+          ${cloud.session && html`<span className=${'sdot ' + (cloud.status.s === 'error' ? 'err' : cloud.status.s === 'syncing' || cloud.pendingN > 0 ? 'wait' : 'ok')} role="img" aria-label=${cloud.status.s === 'error' ? '올리지 못한 기록이 있어요' : cloud.pendingN > 0 ? '올리는 중' : '클라우드에 저장됨'}></span>`}
+        </div>
+        <div className="btns">
+          <button className=${'gear' + (inStats ? ' on' : '')} onClick=${toggleStats}>${inStats ? '오늘로' : '현황'}</button>
+          ${cloud.isAdmin && html`<button className=${'gear' + (adminShown ? ' on' : '')} onClick=${() => { setAdminOpen(!adminShown); setSettingsOpen(false); }}>${adminShown ? '닫기' : '관리자'}</button>`}
+          <button className=${'gear' + (settingsOpen ? ' on' : '')} onClick=${() => { setSettingsOpen(!settingsOpen); setAdminOpen(false); }}>${settingsOpen ? '닫기' : '설정'}</button>
+        </div>
+      </div>
+    </div>
+    <main className="wrap">
+      ${adminShown
+        ? html`<${Admin} toast=${toast} myEmail=${cloud.session && cloud.session.user ? cloud.session.user.email : ''} />`
+        : settingsOpen
+        ? html`<${Settings} S=${S} mutate=${mutate} replaceAll=${replaceAll} toast=${toast} date=${date} cloud=${cloud} />`
+        : tab === 'today'
+          ? html`<${Today} S=${S} date=${date} today=${todayStr} setAtt=${setAtt} toggleItem=${toggleItem} saveDay=${saveDay}
+              goSettings=${() => setSettingsOpen(true)} backupDays=${backupDays} />`
+          : html`<${Stats} S=${S} ym=${ym} copy=${copy} makeLink=${makeLink} onPreview=${onPreview} toast=${toast} cloud=${cloud} />`}
+      <div className="ver">v${VERSION}</div>
+    </main>
+    ${!settingsOpen && !adminShown && html`<nav className="tabs" aria-label="날짜 이동"><div className="in">
+      <button className="tab arrow" aria-label=${inStats ? '이전 달' : '전날'} disabled=${atStart} onClick=${goPrev}>‹</button>
+      <button className=${'tab center' + (atNow ? ' on' : ' off')} onClick=${goNow}>${inStats ? '이번 달' : '오늘'}</button>
+      <button className="tab arrow" aria-label=${inStats ? '다음 달' : '다음날'} onClick=${goNext}>›</button>
+    </div></nav>`}
+    ${msg && html`<div className="toast" role="status">${msg}</div>`}
+    ${sheet && html`<div className="sheet-bg" onClick=${() => setSheet(null)}><div className="sheet" onClick=${e => e.stopPropagation()}>
+      <h2 style=${{ margin: '0 0 6px', fontSize: '17px' }}>${sheet.title}</h2>
+      <p className="sub" style=${{ margin: '0 0 8px' }}>자동 복사가 막혀 있어요. 아래 글을 길게 눌러 복사하세요.</p>
+      <textarea className="ta" readOnly value=${sheet.text} onFocus=${e => e.target.select()} style=${{ minHeight: '140px' }}></textarea>
+      <div className="btns" style=${{ marginTop: '10px' }}><button className="btn pri" onClick=${() => setSheet(null)}>닫기</button></div>
+    </div></div>`}
+  </div>`;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>
