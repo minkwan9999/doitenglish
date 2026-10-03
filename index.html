@@ -282,6 +282,10 @@ body{font-synthesis:none}
 .irow .inum{width:20px;text-align:center;color:var(--muted)}
 .irow .inp{flex:1;min-width:0}
 .irow .icnt{width:34px;text-align:right}
+.tab.center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.15}
+.tab.center .c1{font-size:16px}
+.tab.center .c2{font-size:11px;font-weight:400;color:var(--muted)}
+.tab.center.off .c2{color:var(--link);font-weight:700}
 </style>
 </head>
 <body>
@@ -298,8 +302,9 @@ body{font-synthesis:none}
    업데이트할 때: VERSION 올리고 CHANGELOG 맨 위에 한 줄 추가
    ============================================================ */
 const APP_NAME = '두잇출결';
-const VERSION = '0.21.2';
+const VERSION = '0.22.0';
 const CHANGELOG = [
+  { v: '0.22.0', d: '2026-10-03', n: ['화면 아래 가운데에 지금 보는 날짜(현황에서는 월)를 표시하고, 그 아래에 오늘 여부(오늘이 아니면 탭하면 오늘로)를 작게 표시'] },
   { v: '0.21.2', d: '2026-10-03', n: ['숙제 항목의 저장 버튼을 다른 카드와 같은 위치(제목 줄 오른쪽) 하나로 정리, 아래쪽 저장과 되돌리기 삭제'] },
   { v: '0.21.1', d: '2026-10-03', n: ['숙제 항목 칸 아래에도 저장 버튼 추가, 저장하지 않은 변경이 있으면 안내 표시'] },
   { v: '0.21.0', d: '2026-10-03', n: ['숙제 항목 입력을 5칸으로 나누고 이름은 5글자까지로 제한(칸 위치를 기준으로 기록이 이어짐). 표 제목은 긴 이름이 두 줄까지 보이게 변경'] },
@@ -1595,6 +1600,7 @@ function App() {
   const inStats = !settingsOpen && !adminShown && tab === 'stats';
   const goPrev = () => (inStats ? setYm(shiftMonth(ym, -1)) : setDate(addDays(date, -1)));
   const goNext = () => (inStats ? setYm(shiftMonth(ym, 1)) : setDate(addDays(date, 1)));
+  const centerMain = inStats ? ym.slice(0, 4) + '년 ' + Number(ym.slice(5)) + '월' : fmtLong(date) + ' (' + DOW[parseYmd(date).getDay()] + ')';
   const goNow = () => (inStats ? setYm(curYm) : setDate(todayStr));
   const atNow = inStats ? ym === curYm : date === todayStr;
   const atStart = inStats ? ym <= S.start.slice(0, 7) : date <= addDays(todayStr, -400);
@@ -1628,7 +1634,10 @@ function App() {
     </main>
     ${!settingsOpen && !adminShown && html`<nav className="tabs" aria-label="날짜 이동"><div className="in">
       <button className="tab arrow" aria-label=${inStats ? '이전 달' : '전날'} disabled=${atStart} onClick=${goPrev}>‹</button>
-      <button className=${'tab center' + (atNow ? ' on' : ' off')} onClick=${goNow}>${inStats ? '이번 달' : '오늘'}</button>
+      <button className=${'tab center' + (atNow ? ' on' : ' off')} onClick=${goNow} aria-label=${(inStats ? '이번 달로 이동' : '오늘로 이동') + ', 지금 ' + centerMain}>
+        <span className="c1">${centerMain}</span>
+        <small className="c2">${atNow ? (inStats ? '이번 달' : '오늘') : (inStats ? '눌러서 이번 달로' : '눌러서 오늘로')}</small>
+      </button>
       <button className="tab arrow" aria-label=${inStats ? '다음 달' : '다음날'} onClick=${goNext}>›</button>
     </div></nav>`}
     ${msg && html`<div className="toast" role="status">${msg}</div>`}
