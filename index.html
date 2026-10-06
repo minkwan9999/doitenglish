@@ -302,8 +302,9 @@ body{font-synthesis:none}
    업데이트할 때: VERSION 올리고 CHANGELOG 맨 위에 한 줄 추가
    ============================================================ */
 const APP_NAME = '두잇출결';
-const VERSION = '0.22.1';
+const VERSION = '0.23.0';
 const CHANGELOG = [
+  { v: '0.23.0', d: '2026-10-04', n: ['위쪽 버튼을 오늘, 현황, 설정으로 분리. 오늘 화면의 안 누른 출결은 점선 등원 없이 완전히 빈칸으로 두고, 남은 원생을 한꺼번에 등원 처리하는 버튼으로 대체. 같은 출결 버튼을 다시 누르면 빈칸으로 돌아감. 위쪽 날짜 표시는 삭제(아래 가운데에 표시)'] },
   { v: '0.22.1', d: '2026-10-03', n: ['학부모 링크를 주소 끝에 # 대신 ?s=로 붙이는 방식으로 변경(카카오톡 등에서 # 뒷부분이 사라지는 문제 대응). 예전 # 링크도 계속 열림'] },
   { v: '0.22.0', d: '2026-10-03', n: ['화면 아래 가운데에 지금 보는 날짜(현황에서는 월)를 표시하고, 그 아래에 오늘 여부(오늘이 아니면 탭하면 오늘로)를 작게 표시'] },
   { v: '0.21.2', d: '2026-10-03', n: ['숙제 항목의 저장 버튼을 다른 카드와 같은 위치(제목 줄 오른쪽) 하나로 정리, 아래쪽 저장과 되돌리기 삭제'] },
@@ -865,14 +866,14 @@ function DateTitle({ date }) {
   </div>`;
 }
 
-function Today({ S, date, today, setAtt, toggleItem, saveDay, goSettings, backupDays }) {
+function Today({ S, date, today, setAtt, toggleItem, bulkPresent, goSettings, backupDays }) {
   const [help, setHelp] = useState(false);
   if (S.students.length === 0) return html`<div className="card empty"><p style=${{ marginBottom: 0 }}>등록된 원생이 없어요. <button className="link" onClick=${goSettings}>설정에서 추가하기</button></p></div>`;
   const list = visibleStudents(S, date);
   if (date > today) return html`<div className="card empty"><b>아직 오지 않은 날이에요</b><p>${fmtLong(date)}에 오는 원생은 ${list.length}명이에요. 그날이 되면 출결과 숙제를 입력할 수 있어요.</p></div>`;
   const recs = S.att[date] || {};
   const hws = S.hw[date] || {};
-  const stored = list.length > 0 && list.every(s => recs[s.id]);
+  const unmarked = list.filter(s => !recs[s.id]).length;
   const cols = '58px repeat(' + (3 + S.items.length) + ', minmax(0, 1fr))';
   return html`<div>
     ${date < S.start && html`<div className="banner">시작일(${fmtShort(S.start)}) 이전 날짜예요. 여기에 기록하면 시작일이 ${fmtShort(date)}로 앞당겨져서, 현황과 학부모 화면에도 이 날부터 나와요.</div>`}
@@ -886,21 +887,21 @@ function Today({ S, date, today, setAtt, toggleItem, saveDay, goSettings, backup
             <b>${list.length}명</b>
             <button className="link" aria-expanded=${help} onClick=${() => setHelp(!help)}>사용법 ${help ? '▴' : '▾'}</button>
             <span></span>
-            <button className="link" disabled=${stored} onClick=${saveDay}>${stored ? '저장됨' : '이대로 저장'}</button>
+            <button className="link" disabled=${unmarked === 0} onClick=${() => bulkPresent(list)}>${unmarked === 0 ? '모두 체크함' : '남은 ' + unmarked + '명 모두 등원'}</button>
           </div>
-          ${help && html`<div className="gnote">연한 점선 등원은 저장 전이에요. 나머지는 '이대로 저장'을 누르세요. 숙제는 누를 때마다 완료, 안함, 빈칸이에요.</div>`}
+          ${help && html`<div className="gnote">출결은 눌러서 등원, 지각, 결석을 고르세요. 같은 버튼을 다시 누르면 빈칸이 돼요. 아직 안 누른 원생은 '남은 N명 모두 등원'으로 한꺼번에 등원 처리해요. 숙제는 누를 때마다 완료, 안함, 빈칸이에요.</div>`}
           <div className="thead" style=${{ gridTemplateColumns: cols }}>
             <span className="c-name">이름</span><span>등원</span><span>지각</span><span>결석</span>
             ${S.items.map((it, i) => html`<span key=${it.id} className=${i === 0 ? 'hw0' : ''}>${it.label}</span>`)}
           </div>
           ${list.map(st => {
             const rec = recs[st.id];
-            const eff = rec ? rec.s : 'p';
+            const eff = rec ? rec.s : '';
             const x = (hws[st.id] && hws[st.id].x) || {};
             return html`<div className=${'st' + (eff === 'a' ? ' absent' : '')} key=${st.id} style=${{ gridTemplateColumns: cols }}>
               <div className="nm">${st.name}</div>
               ${[['p', '등원'], ['l', '지각'], ['a', '결석']].map(([k, label]) => html`
-                <button key=${k} className=${'sb ' + k + (eff === k ? ' on' : '') + (eff === k && !rec ? ' pre' : '')}
+                <button key=${k} className=${'sb ' + k + (eff === k ? ' on' : '')}
                   aria-label=${st.name + ' ' + label} aria-pressed=${eff === k} onClick=${() => setAtt(st, k)}>${eff === k ? label : '\u00a0'}</button>`)}
               ${S.items.map((it, i) => {
                 const v = x[it.id] === 'd' || x[it.id] === 'n' ? x[it.id] : '';
@@ -1549,18 +1550,24 @@ function App() {
   const replaceAll = n => setS(n);
   const toast = t => { setMsg(t); clearTimeout(tmr.current); tmr.current = setTimeout(() => setMsg(''), 2600); };
 
-  /* 아직 저장 안 된 출결만 기본값(등원)으로 채움. 이미 누른 칸과 숙제 칸은 그대로 */
-  const fillDefaults = (n, list) => {
-    if (date < n.start) n.start = date;
-    n.att[date] = n.att[date] || {};
-    list.forEach(st => { if (!n.att[date][st.id]) n.att[date][st.id] = { s: 'p', t: '' }; });
-  };
-  /* 출결: 누른 원생의 출결만 저장. 지각·결석을 한 번 더 누르면 등원으로 돌아옴 */
+  /* 출결: 누르면 그 칸으로 저장, 같은 버튼을 다시 누르면 빈칸으로 돌아감 */
   const setAtt = (st, k) => {
     if (date > todayStr) return;
     const cur = (S.att[date] || {})[st.id];
-    const next = cur && cur.s === k && k !== 'p' ? 'p' : k;
-    mutate(n => { if (date < n.start) n.start = date; n.att[date] = n.att[date] || {}; n.att[date][st.id] = { s: next, t: '' }; });
+    mutate(n => {
+      if (date < n.start) n.start = date;
+      n.att[date] = n.att[date] || {};
+      if (cur && cur.s === k) delete n.att[date][st.id]; else n.att[date][st.id] = { s: k, t: '' };
+    });
+  };
+  /* 아직 안 누른 원생을 한꺼번에 등원 처리 */
+  const bulkPresent = list => {
+    if (date > todayStr) return;
+    mutate(n => {
+      if (date < n.start) n.start = date;
+      n.att[date] = n.att[date] || {};
+      list.forEach(st => { if (!n.att[date][st.id]) n.att[date][st.id] = { s: 'p', t: '' }; });
+    });
   };
   /* 숙제: 누른 칸만 저장. 빈칸(기본) → 완료 → 안함 → 빈칸 */
   const toggleItem = (st, itemId) => {
@@ -1575,7 +1582,6 @@ function App() {
       n.hw[date][st.id] = { ...rec, r: true, x };
     });
   };
-  const saveDay = () => { if (date > todayStr) return; mutate(n => fillDefaults(n, visibleStudents(S, date))); toast('남은 칸을 기본값으로 저장했어요'); };
 
   const copy = async (text, label) => {
     const ok = await copyText(text);
@@ -1610,20 +1616,21 @@ function App() {
   const goNow = () => (inStats ? setYm(curYm) : setDate(todayStr));
   const atNow = inStats ? ym === curYm : date === todayStr;
   const atStart = inStats ? ym <= S.start.slice(0, 7) : date <= addDays(todayStr, -400);
-  const headText = settingsOpen || adminShown ? '' : inStats ? ym.slice(0, 4) + '년 ' + Number(ym.slice(5)) + '월' : fmtLong(date) + ' (' + DOW[parseYmd(date).getDay()] + ')';
-  const toggleStats = () => { if (settingsOpen || adminShown) { setSettingsOpen(false); setAdminOpen(false); setTab('stats'); } else setTab(tab === 'stats' ? 'today' : 'stats'); };
+  const showToday = () => { setSettingsOpen(false); setAdminOpen(false); setTab('today'); setDate(todayStr); };
+  const showStats = () => { setSettingsOpen(false); setAdminOpen(false); setTab('stats'); };
+  const onToday = !settingsOpen && !adminShown && tab === 'today';
   return html`<div>
     <div className="wrap topwrap">
       <div className="top">
         <div className="ttl">
           <span className="room">${S.room}</span>
-          ${headText && html`<span className=${'tdate' + (atNow ? '' : ' off')}>${headText}</span>`}
           ${cloud.session && html`<span className=${'sdot ' + (cloud.status.s === 'error' ? 'err' : cloud.status.s === 'syncing' || cloud.pendingN > 0 ? 'wait' : 'ok')} role="img" aria-label=${cloud.status.s === 'error' ? '올리지 못한 기록이 있어요' : cloud.pendingN > 0 ? '올리는 중' : '클라우드에 저장됨'}></span>`}
         </div>
         <div className="btns">
-          <button className=${'gear' + (inStats ? ' on' : '')} onClick=${toggleStats}>${inStats ? '오늘로' : '현황'}</button>
-          ${cloud.isAdmin && html`<button className=${'gear' + (adminShown ? ' on' : '')} onClick=${() => { setAdminOpen(!adminShown); setSettingsOpen(false); }}>${adminShown ? '닫기' : '관리자'}</button>`}
-          <button className=${'gear' + (settingsOpen ? ' on' : '')} onClick=${() => { setSettingsOpen(!settingsOpen); setAdminOpen(false); }}>${settingsOpen ? '닫기' : '설정'}</button>
+          <button className=${'gear' + (onToday ? ' on' : '')} aria-pressed=${onToday} onClick=${showToday}>오늘</button>
+          <button className=${'gear' + (inStats ? ' on' : '')} aria-pressed=${inStats} onClick=${showStats}>현황</button>
+          ${cloud.isAdmin && html`<button className=${'gear' + (adminShown ? ' on' : '')} aria-pressed=${adminShown} onClick=${() => { setAdminOpen(!adminShown); setSettingsOpen(false); }}>관리자</button>`}
+          <button className=${'gear' + (settingsOpen ? ' on' : '')} aria-pressed=${settingsOpen} onClick=${() => { setSettingsOpen(!settingsOpen); setAdminOpen(false); }}>설정</button>
         </div>
       </div>
     </div>
@@ -1633,7 +1640,7 @@ function App() {
         : settingsOpen
         ? html`<${Settings} S=${S} mutate=${mutate} replaceAll=${replaceAll} toast=${toast} date=${date} cloud=${cloud} />`
         : tab === 'today'
-          ? html`<${Today} S=${S} date=${date} today=${todayStr} setAtt=${setAtt} toggleItem=${toggleItem} saveDay=${saveDay}
+          ? html`<${Today} S=${S} date=${date} today=${todayStr} setAtt=${setAtt} toggleItem=${toggleItem} bulkPresent=${bulkPresent}
               goSettings=${() => setSettingsOpen(true)} backupDays=${backupDays} />`
           : html`<${Stats} S=${S} ym=${ym} copy=${copy} makeLink=${makeLink} onPreview=${onPreview} toast=${toast} cloud=${cloud} />`}
       <div className="ver">${APP_NAME} · v${VERSION}</div>
