@@ -307,8 +307,9 @@ body{font-synthesis:none}
    업데이트할 때: VERSION 올리고 CHANGELOG 맨 위에 한 줄 추가
    ============================================================ */
 const APP_NAME = '두잇출결';
-const VERSION = '0.25.0';
+const VERSION = '0.26.0';
 const CHANGELOG = [
+  { v: '0.26.0', d: '2026-10-08', n: ['숙제 칸을 누르기 전 기본 상태에 "없음"이 표시돼요. 누르면 완료, 안함, 없음 순서로 바뀌어요.'] },
   { v: '0.25.0', d: '2026-10-05', n: ['원생 등록할 때 등원 요일 지정을 없앴어요. 이제 등록한 모든 원생이 매일 나와요.'] },
   { v: '0.24.3', d: '2026-10-04', n: ['개발자용에 업데이트 안내 팝업 미리 보기 추가(미리보기 화면에서도 모양 확인 가능).'] },
   { v: '0.24.2', d: '2026-10-04', n: ['새 버전 안내는 버전마다 딱 한 번만 나와요.'] },
@@ -921,7 +922,7 @@ function Today({ S, date, today, setAtt, toggleItem, bulkPresent, goSettings, ba
             <span></span>
             <button className="link" disabled=${unmarked === 0} onClick=${() => bulkPresent(list)}>${unmarked === 0 ? '모두 체크함' : '남은 ' + unmarked + '명 모두 등원'}</button>
           </div>
-          ${help && html`<div className="gnote">출결은 눌러서 등원, 지각, 결석을 고르세요. 같은 버튼을 다시 누르면 빈칸이 돼요. 아직 안 누른 원생은 '남은 N명 모두 등원'으로 한꺼번에 등원 처리해요. 숙제는 누를 때마다 완료, 안함, 빈칸이에요.</div>`}
+          ${help && html`<div className="gnote">출결은 눌러서 등원, 지각, 결석을 고르세요. 같은 버튼을 다시 누르면 빈칸이 돼요. 아직 안 누른 원생은 '남은 N명 모두 등원'으로 한꺼번에 등원 처리해요. 숙제는 기본이 없음이고, 누를 때마다 완료, 안함, 없음이에요.</div>`}
           <div className="thead" style=${{ gridTemplateColumns: cols }}>
             <span className="c-name">이름</span><span>등원</span><span>지각</span><span>결석</span>
             ${S.items.map((it, i) => html`<span key=${it.id} className=${i === 0 ? 'hw0' : ''}>${it.label}</span>`)}
@@ -937,7 +938,7 @@ function Today({ S, date, today, setAtt, toggleItem, bulkPresent, goSettings, ba
                   aria-label=${st.name + ' ' + label} aria-pressed=${eff === k} onClick=${() => setAtt(st, k)}>${eff === k ? label : '\u00a0'}</button>`)}
               ${S.items.map((it, i) => {
                 const v = x[it.id] === 'd' || x[it.id] === 'n' ? x[it.id] : '';
-                return html`<button key=${it.id} className=${'hwc' + (v ? ' ' + v : '') + (i === 0 ? ' hw0' : '')} aria-label=${st.name + ' ' + it.label + ' ' + (v === 'd' ? '완료' : v === 'n' ? '안함' : '빈칸')} onClick=${() => toggleItem(st, it.id)}>${v === 'd' ? '완료' : v === 'n' ? '안함' : '\u00a0'}</button>`;
+                return html`<button key=${it.id} className=${'hwc' + (v ? ' ' + v : '') + (i === 0 ? ' hw0' : '')} aria-label=${st.name + ' ' + it.label + ' ' + (v === 'd' ? '완료' : v === 'n' ? '안함' : '없음')} onClick=${() => toggleItem(st, it.id)}>${v === 'd' ? '완료' : v === 'n' ? '안함' : '없음'}</button>`;
               })}
             </div>`;
           })}
