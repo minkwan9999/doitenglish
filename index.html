@@ -176,6 +176,7 @@ select.inp{appearance:auto}
 .hwc small{font-size:11px;font-weight:500}
 .hwc b{font-size:14px;font-weight:700}
 .hwc.d{background:var(--ok);border-color:var(--ok);color:var(--on-status)}
+.hwc.h{background:var(--late);border-color:var(--late);color:var(--on-status)}
 .hwc.n{background:var(--abs);border-color:var(--abs);color:var(--on-status)}
 .grp{flex-wrap:wrap}
 .chead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
@@ -220,6 +221,7 @@ body{font-synthesis:none}
 .sb.on.pre{background:transparent;border-style:dashed}
 .hwc{background:var(--surface);border-radius:12px}
 .hwc.d{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.hwc.h{background:var(--late-bg);border-color:var(--late);color:var(--late)}
 .hwc.n{background:var(--abs-bg);border-color:var(--abs);color:var(--abs)}
 
 /* v0.11 한 줄 표 */
@@ -250,7 +252,7 @@ body{font-synthesis:none}
 .pv-h{background:var(--head);color:var(--muted);font-size:11px;border-radius:17px 17px 0 0}
 .pill{display:block;padding:3px 0;border-radius:999px;font-size:11px;border:1.5px solid transparent;line-height:1.3}
 .pill.p,.pill.d{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
-.pill.l{background:var(--late-bg);border-color:var(--late);color:var(--late)}
+.pill.h,.pill.l{background:var(--late-bg);border-color:var(--late);color:var(--late)}
 .pill.a,.pill.n{background:var(--abs-bg);border-color:var(--abs);color:var(--abs)}
 .dot{color:var(--line)}
 .list.tbl2{overflow:visible}
@@ -307,8 +309,9 @@ body{font-synthesis:none}
    업데이트할 때: VERSION 올리고 CHANGELOG 맨 위에 한 줄 추가
    ============================================================ */
 const APP_NAME = '두잇출결';
-const VERSION = '0.26.0';
+const VERSION = '0.27.0';
 const CHANGELOG = [
+  { v: '0.27.0', d: '2026-10-08', n: ['숙제 표시를 ○(완료), △(일부), ✕(안함)으로 바꿨어요. 숙제 칸을 누르면 없음, ○, △, ✕ 순서로 바뀌어요.'] },
   { v: '0.26.0', d: '2026-10-08', n: ['숙제 칸을 누르기 전 기본 상태에 "없음"이 표시돼요. 누르면 완료, 안함, 없음 순서로 바뀌어요.'] },
   { v: '0.25.0', d: '2026-10-05', n: ['원생 등록할 때 등원 요일 지정을 없앴어요. 이제 등록한 모든 원생이 매일 나와요.'] },
   { v: '0.24.3', d: '2026-10-04', n: ['개발자용에 업데이트 안내 팝업 미리 보기 추가(미리보기 화면에서도 모양 확인 가능).'] },
@@ -616,7 +619,7 @@ function useCloud(S, setS, skipDiff) {
         Object.keys(hw).forEach(id => {
           if (!idset.has(id)) return;
           const x = (hw[id] && hw[id].x) || {};
-          Object.keys(x).forEach(iid => { if (x[iid] === 'd' || x[iid] === 'n') hrows.push({ owner_id: uid, student_id: id, day: dt, item_id: iid, status: x[iid] }); });
+          Object.keys(x).forEach(iid => { if (x[iid] === 'd' || x[iid] === 'h' || x[iid] === 'n') hrows.push({ owner_id: uid, student_id: id, day: dt, item_id: iid, status: x[iid] }); });
         });
         if (arows.length) { r = await sb.from('attendance').insert(arows); if (r.error) throw r.error; }
         if (hrows.length) { r = await sb.from('homework').insert(hrows); if (r.error) throw r.error; }
@@ -778,8 +781,8 @@ function buildPayload(S, st) {
     const dow = parseYmd(d).getDay();
     const a = S.att[d] && S.att[d][st.id];
     const x = (S.hw[d] && S.hw[d][st.id] && S.hw[d][st.id].x) || {};
-    const hwStr = S.items.map(it => (x[it.id] === 'd' || x[it.id] === 'n' ? x[it.id] : '-')).join('');
-    const hasHw = /[dn]/.test(hwStr);
+    const hwStr = S.items.map(it => (x[it.id] === 'd' || x[it.id] === 'h' || x[it.id] === 'n' ? x[it.id] : '-')).join('');
+    const hasHw = /[dhn]/.test(hwStr);
     if (st.since && d < st.since) continue;
     if (((st.days || []).length < 7 && (st.days || []).includes(dow)) || (st.since && st.since === d) || a || hasHw) rows.push([d, a ? a.s : '', hwStr]);
   }
@@ -922,7 +925,7 @@ function Today({ S, date, today, setAtt, toggleItem, bulkPresent, goSettings, ba
             <span></span>
             <button className="link" disabled=${unmarked === 0} onClick=${() => bulkPresent(list)}>${unmarked === 0 ? '모두 체크함' : '남은 ' + unmarked + '명 모두 등원'}</button>
           </div>
-          ${help && html`<div className="gnote">출결은 눌러서 등원, 지각, 결석을 고르세요. 같은 버튼을 다시 누르면 빈칸이 돼요. 아직 안 누른 원생은 '남은 N명 모두 등원'으로 한꺼번에 등원 처리해요. 숙제는 기본이 없음이고, 누를 때마다 완료, 안함, 없음이에요.</div>`}
+          ${help && html`<div className="gnote">출결은 눌러서 등원, 지각, 결석을 고르세요. 같은 버튼을 다시 누르면 빈칸이 돼요. 아직 안 누른 원생은 '남은 N명 모두 등원'으로 한꺼번에 등원 처리해요. 숙제는 기본이 없음이고, 누를 때마다 ○(완료), △(일부), ✕(안함), 없음이에요.</div>`}
           <div className="thead" style=${{ gridTemplateColumns: cols }}>
             <span className="c-name">이름</span><span>등원</span><span>지각</span><span>결석</span>
             ${S.items.map((it, i) => html`<span key=${it.id} className=${i === 0 ? 'hw0' : ''}>${it.label}</span>`)}
@@ -937,8 +940,8 @@ function Today({ S, date, today, setAtt, toggleItem, bulkPresent, goSettings, ba
                 <button key=${k} className=${'sb ' + k + (eff === k ? ' on' : '')}
                   aria-label=${st.name + ' ' + label} aria-pressed=${eff === k} onClick=${() => setAtt(st, k)}>${eff === k ? label : '\u00a0'}</button>`)}
               ${S.items.map((it, i) => {
-                const v = x[it.id] === 'd' || x[it.id] === 'n' ? x[it.id] : '';
-                return html`<button key=${it.id} className=${'hwc' + (v ? ' ' + v : '') + (i === 0 ? ' hw0' : '')} aria-label=${st.name + ' ' + it.label + ' ' + (v === 'd' ? '완료' : v === 'n' ? '안함' : '없음')} onClick=${() => toggleItem(st, it.id)}>${v === 'd' ? '완료' : v === 'n' ? '안함' : '없음'}</button>`;
+                const v = x[it.id] === 'd' || x[it.id] === 'h' || x[it.id] === 'n' ? x[it.id] : '';
+                return html`<button key=${it.id} className=${'hwc' + (v ? ' ' + v : '') + (i === 0 ? ' hw0' : '')} aria-label=${st.name + ' ' + it.label + ' ' + (v === 'd' ? '완료' : v === 'h' ? '일부' : v === 'n' ? '안함' : '없음')} onClick=${() => toggleItem(st, it.id)}>${v === 'd' ? '○' : v === 'h' ? '△' : v === 'n' ? '✕' : '없음'}</button>`;
               })}
             </div>`;
           })}
@@ -972,7 +975,7 @@ function ParentView({ d, back, state, retry }) {
           <div className="pv-row" key=${dt} style=${{ gridTemplateColumns: cols }}>
             <span className="dt">${fmtShort(dt)}</span>
             <span>${ATT[a] ? html`<span className=${'pill ' + a}>${ATT[a]}</span>` : html`<span className="dot">·</span>`}</span>
-            ${d.i.map((l, i) => html`<span key=${i}>${hw[i] === 'd' ? html`<span className="pill d">완료</span>` : hw[i] === 'n' ? html`<span className="pill n">안함</span>` : html`<span className="dot">·</span>`}</span>`)}
+            ${d.i.map((l, i) => html`<span key=${i}>${hw[i] === 'd' ? html`<span className="pill d" aria-label="완료">○</span>` : hw[i] === 'h' ? html`<span className="pill h" aria-label="일부">△</span>` : hw[i] === 'n' ? html`<span className="pill n" aria-label="안함">✕</span>` : html`<span className="dot">·</span>`}</span>`)}
           </div>`)}
         <p className="ver" style=${{ lineHeight: 1.6 }}>${d.v >= 2 ? '링크를 열 때마다 최신 기록을 불러와요.' : '보낸 시점의 기록이에요. 최신 내용은 선생님께 다시 받아주세요.'}<br />빈 칸(·)은 기록이 없거나 해당 없음이에요.</p>
       </div>
@@ -1120,8 +1123,8 @@ function BulkAdd({ onSave, onCancel }) {
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 const ATT_LABEL = { p: '등원', l: '지각', a: '결석' };
 const ATT_KEY = { 등원: 'p', 지각: 'l', 결석: 'a' };
-const HW_LABEL = { d: '완료', n: '안함' };
-const HW_KEY = { 완료: 'd', 안함: 'n' };
+const HW_LABEL = { d: '완료', h: '일부', n: '안함' };
+const HW_KEY = { 완료: 'd', 일부: 'h', 안함: 'n' };
 
 function buildXlsx(S) {
   const nameOf = {}; S.students.forEach(s => { nameOf[s.id] = s.name; });
@@ -1631,7 +1634,7 @@ function App() {
       list.forEach(st => { if (!n.att[date][st.id]) n.att[date][st.id] = { s: 'p', t: '' }; });
     });
   };
-  /* 숙제: 누른 칸만 저장. 빈칸(기본) → 완료 → 안함 → 빈칸 */
+  /* 숙제: 누른 칸만 저장. 없음(기본) → 완료 → 일부 → 안함 → 없음 */
   const toggleItem = (st, itemId) => {
     if (date > todayStr) return;
     const cur = ((S.hw[date] || {})[st.id] || { x: {} }).x[itemId];
@@ -1640,7 +1643,7 @@ function App() {
       n.hw[date] = n.hw[date] || {};
       const rec = n.hw[date][st.id] || { r: true, x: {}, m: '' };
       const x = { ...(rec.x || {}) };
-      if (!cur || cur === 'z') x[itemId] = 'd'; else if (cur === 'd') x[itemId] = 'n'; else delete x[itemId];
+      if (!cur || cur === 'z') x[itemId] = 'd'; else if (cur === 'd') x[itemId] = 'h'; else if (cur === 'h') x[itemId] = 'n'; else delete x[itemId];
       n.hw[date][st.id] = { ...rec, r: true, x };
     });
   };
