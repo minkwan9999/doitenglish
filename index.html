@@ -255,6 +255,7 @@ body{font-synthesis:none}
 .pill.h,.pill.l{background:var(--late-bg);border-color:var(--late);color:var(--late)}
 .pill.a,.pill.n{background:var(--abs-bg);border-color:var(--abs);color:var(--abs)}
 .dot{color:var(--line)}
+.none{font-size:11px;color:var(--muted)}
 .list.tbl2{overflow:visible}
 .tbl2 .mhead{position:sticky;top:calc(var(--sat) + 54px);z-index:5;border-radius:17px 17px 0 0}
 .tbl2 .mrow:last-child{border-radius:0 0 17px 17px}
@@ -309,8 +310,9 @@ body{font-synthesis:none}
    업데이트할 때: VERSION 올리고 CHANGELOG 맨 위에 한 줄 추가
    ============================================================ */
 const APP_NAME = '두잇출결';
-const VERSION = '0.27.0';
+const VERSION = '0.28.0';
 const CHANGELOG = [
+  { v: '0.28.0', d: '2026-10-08', n: ['학부모 화면에서도 숙제 칸의 기본 상태가 빈칸 대신 "없음"으로 보여요.'] },
   { v: '0.27.0', d: '2026-10-08', n: ['숙제 표시를 ○(완료), △(일부), ✕(안함)으로 바꿨어요. 숙제 칸을 누르면 없음, ○, △, ✕ 순서로 바뀌어요.'] },
   { v: '0.26.0', d: '2026-10-08', n: ['숙제 칸을 누르기 전 기본 상태에 "없음"이 표시돼요. 누르면 완료, 안함, 없음 순서로 바뀌어요.'] },
   { v: '0.25.0', d: '2026-10-05', n: ['원생 등록할 때 등원 요일 지정을 없앴어요. 이제 등록한 모든 원생이 매일 나와요.'] },
@@ -975,7 +977,7 @@ function ParentView({ d, back, state, retry }) {
           <div className="pv-row" key=${dt} style=${{ gridTemplateColumns: cols }}>
             <span className="dt">${fmtShort(dt)}</span>
             <span>${ATT[a] ? html`<span className=${'pill ' + a}>${ATT[a]}</span>` : html`<span className="dot">·</span>`}</span>
-            ${d.i.map((l, i) => html`<span key=${i}>${hw[i] === 'd' ? html`<span className="pill d" aria-label="완료">○</span>` : hw[i] === 'h' ? html`<span className="pill h" aria-label="일부">△</span>` : hw[i] === 'n' ? html`<span className="pill n" aria-label="안함">✕</span>` : html`<span className="dot">·</span>`}</span>`)}
+            ${d.i.map((l, i) => html`<span key=${i}>${hw[i] === 'd' ? html`<span className="pill d" aria-label="완료">○</span>` : hw[i] === 'h' ? html`<span className="pill h" aria-label="일부">△</span>` : hw[i] === 'n' ? html`<span className="pill n" aria-label="안함">✕</span>` : html`<span className="none">없음</span>`}</span>`)}
           </div>`)}
         <p className="ver" style=${{ lineHeight: 1.6 }}>${d.v >= 2 ? '링크를 열 때마다 최신 기록을 불러와요.' : '보낸 시점의 기록이에요. 최신 내용은 선생님께 다시 받아주세요.'}<br />빈 칸(·)은 기록이 없거나 해당 없음이에요.</p>
       </div>
